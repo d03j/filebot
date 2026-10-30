@@ -483,12 +483,7 @@ public class MediaDetection {
 
 	public static List<IndexEntry<SearchResult>> getSeriesIndex() throws IOException {
 		return getIndex(() -> {
-			try {
-				return releaseInfo.getTheTVDBIndex();
-			} catch (Exception e) {
-				debug.severe("Failed to load series index: " + e.getMessage());
-				return new SearchResult[0];
-			}
+			return new SearchResult[0];
 		}, HighPerformanceMatcher::prepare, seriesIndex);
 	}
 
@@ -1190,15 +1185,7 @@ public class MediaDetection {
 				String text = new String(readFile(nfo), "UTF-8");
 
 				for (int imdbid : grepImdbId(text)) {
-					SearchResult series = WebServices.TheTVDB.lookupByIMDbID(imdbid, language);
-					if (series != null) {
-						names.add(series);
-					}
-				}
-
-				for (int tvdbid : grepTheTvdbId(text)) {
-					SearchResult series = WebServices.TheTVDB.lookupByID(tvdbid, language);
-					if (series != null) {
+					for (SearchResult series : WebServices.TVmaze.search(String.format("tt%07d", imdbid), language)) {
 						names.add(series);
 					}
 				}
@@ -1247,9 +1234,7 @@ public class MediaDetection {
 	}
 
 	public static SeriesInfo grepSeries(File nfo, Locale locale) throws Exception {
-		String contents = new String(readFile(nfo), "UTF-8");
-		int thetvdbid = grepTheTvdbId(contents).iterator().next();
-		return WebServices.TheTVDB.getSeriesInfo(thetvdbid, locale);
+		throw new UnsupportedOperationException();
 	}
 
 	public static List<SearchResult> getProbableMatches(String query, Collection<? extends SearchResult> options, boolean alias, boolean strict) {

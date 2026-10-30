@@ -367,9 +367,6 @@ public class ReleaseInfo {
 		return seriesMappings.get();
 	}
 
-	public SearchResult[] getTheTVDBIndex() throws Exception {
-		return tvdbIndex.get();
-	}
 
 	public SearchResult[] getAnidbIndex() throws Exception {
 		return anidbIndex.get();
@@ -442,7 +439,6 @@ public class ReleaseInfo {
 	private final Resource<String[]> queryBlacklist = lines("url.query-blacklist", Cache.ONE_WEEK);
 	private final Resource<String[]> excludeBlacklist = lines("url.exclude-blacklist", Cache.ONE_WEEK);
 
-	private final Resource<SearchResult[]> tvdbIndex = tsv("url.thetvdb-index", Cache.ONE_WEEK, this::parseSeries, SearchResult[]::new);
 	private final Resource<SearchResult[]> anidbIndex = tsv("url.anidb-index", Cache.ONE_WEEK, this::parseSeries, SearchResult[]::new);
 
 	private final Resource<Movie[]> movieIndex = tsv("url.movie-list", Cache.ONE_MONTH, this::parseMovie, Movie[]::new);

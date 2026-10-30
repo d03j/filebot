@@ -130,7 +130,7 @@ public class CmdlineOperations implements CmdlineInterface {
 						results.addAll(renameMovie(it.getValue(), action, conflictAction, outputDir, format, TheMovieDB, query, filter, locale, strict));
 						break;
 					case Series:
-						results.addAll(renameSeries(it.getValue(), action, conflictAction, outputDir, format, TheTVDB, query, SortOrder.forName(sortOrder), filter, locale, strict));
+						results.addAll(renameSeries(it.getValue(), action, conflictAction, outputDir, format, TVmaze, query, SortOrder.forName(sortOrder), filter, locale, strict));
 						break;
 					case Anime:
 						results.addAll(renameSeries(it.getValue(), action, conflictAction, outputDir, format, AniDB, query, SortOrder.forName(sortOrder), filter, locale, strict));
@@ -1032,7 +1032,7 @@ public class CmdlineOperations implements CmdlineInterface {
 		// find series on the web and fetch episode list
 		ExpressionFormat format = (expression != null) ? new ExpressionFormat(expression) : null;
 		ExpressionFilter filter = (filterExpression != null) ? new ExpressionFilter(filterExpression) : null;
-		EpisodeListProvider service = (db == null) ? TheTVDB : getEpisodeListProvider(db);
+		EpisodeListProvider service = (db == null) ? TVmaze : getEpisodeListProvider(db);
 		SortOrder sortOrder = SortOrder.forName(sortOrderName);
 		Locale locale = getLanguage(languageName).getLocale();
 
