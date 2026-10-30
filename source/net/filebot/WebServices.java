@@ -36,7 +36,6 @@ import net.filebot.web.SubtitleSearchResult;
 import net.filebot.web.TMDbClient;
 import net.filebot.web.TMDbTVClient;
 import net.filebot.web.TVMazeClient;
-import net.filebot.web.TheTVDBClient;
 import net.filebot.web.VideoHashSubtitleService;
 import one.util.streamex.StreamEx;
 
@@ -53,8 +52,6 @@ public final class WebServices {
 	public static final TVMazeClient TVmaze = new TVMazeClient();
 	public static final AnidbClient AniDB = new AnidbClientWithLocalSearch(getApiKey("anidb"), 6);
 
-	// extended TheTVDB module with local search
-	public static final TheTVDBClientWithLocalSearch TheTVDB = new TheTVDBClientWithLocalSearch(getApiKey("thetvdb"));
 	public static final TMDbTVClient TheMovieDB_TV = new TMDbTVClient(TheMovieDB);
 
 	// subtitle sources
@@ -68,7 +65,7 @@ public final class WebServices {
 	public static final ID3Lookup MediaInfoID3 = new ID3Lookup();
 
 	public static EpisodeListProvider[] getEpisodeListProviders() {
-		return new EpisodeListProvider[] { TheTVDB, AniDB, TheMovieDB_TV, TVmaze };
+		return new EpisodeListProvider[] { TVmaze, AniDB, TheMovieDB_TV };
 	}
 
 	public static MovieIdentificationService[] getMovieIdentificationServices() {
@@ -107,37 +104,6 @@ public final class WebServices {
 	}
 
 	public static final ExecutorService requestThreadPool = Executors.newCachedThreadPool();
-
-	public static class TheTVDBClientWithLocalSearch extends TheTVDBClient {
-
-		public TheTVDBClientWithLocalSearch(String apikey) {
-			super(apikey);
-		}
-
-		// local TheTVDB search index
-		private final Resource<LocalSearch<SearchResult>> localIndex = Resource.lazy(() -> {
-			return new LocalSearch<SearchResult>(releaseInfo.getTheTVDBIndex(), SearchResult::getEffectiveNames);
-		}).memoize();
-
-		private SearchResult merge(SearchResult prime, List<SearchResult> group) {
-			int id = prime.getId();
-			String name = prime.getName();
-			String[] aliasNames = StreamEx.of(group).flatMap(it -> stream(it.getAliasNames())).remove(name::equals).distinct().toArray(String[]::new);
-			return new SearchResult(id, name, aliasNames);
-		}
-
-		@Override
-		public List<SearchResult> fetchSearchResult(final String query, final Locale locale) throws Exception {
-			// run local search and API search in parallel
-			Future<List<SearchResult>> apiSearch = requestThreadPool.submit(() -> TheTVDBClientWithLocalSearch.super.fetchSearchResult(query, locale));
-			Future<List<SearchResult>> localSearch = requestThreadPool.submit(() -> localIndex.get().search(query));
-
-			// combine alias names into a single search results, and keep API search name as primary name
-			Collection<SearchResult> result = StreamEx.of(apiSearch.get()).append(localSearch.get()).groupingBy(SearchResult::getId, collectingAndThen(toList(), group -> merge(group.get(0), group))).values();
-
-			return sortBySimilarity(result, singleton(query), getSeriesMatchMetric());
-		}
-	}
 
 	public static class AnidbClientWithLocalSearch extends AnidbClient {
 
