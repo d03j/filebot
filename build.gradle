@@ -1,0 +1,113 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+javafx {
+    version = "21"
+    modules = [ 'javafx.controls', 'javafx.swing', 'javafx.web', 'javafx.graphics', 'javafx.base', 'javafx.media' ]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['source']
+        }
+        resources {
+            srcDirs = ['source']
+            exclude '**/*.java'
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+        resources {
+            srcDirs = ['test']
+            exclude '**/*.java'
+        }
+    }
+}
+
+dependencies {
+    // Local custom JARs in lib/jars
+    implementation fileTree(dir: 'lib/jars', include: ['*.jar'])
+
+    // Dependencies from ivy.xml
+    implementation 'org.codehaus.groovy:groovy-all:2.4.21'
+    implementation 'net.java.dev.jna:jna:4.2.2'
+    implementation 'net.java.dev.jna:jna-platform:4.2.2'
+    implementation 'args4j:args4j:2.33'
+    implementation 'net.sf.ehcache:ehcache:2.10.9.2'
+    implementation 'com.ibm.icu:icu4j:56.1'
+    implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'org.tukaani:xz:1.9'
+    implementation 'com.cedarsoftware:json-io:4.14.0'
+    implementation 'commons-io:commons-io:2.11.0'
+    implementation 'commons-net:commons-net:3.8.0'
+    implementation 'org.slf4j:slf4j-jdk14:1.7.36'
+    implementation 'net.java.dev.glazedlists:glazedlists_java15:1.9.1'
+    implementation 'com.miglayout:miglayout-swing:4.2'
+    implementation 'org.apache.commons:commons-vfs2:2.9.0'
+    implementation 'com.github.junrar:junrar:7.5.4'
+    implementation 'com.fifesoft:rsyntaxtextarea:2.6.1'
+    implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:9.20-2.00beta'
+    implementation 'net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms:9.20-2.00beta'
+    implementation 'com.optimaize.languagedetector:language-detector:0.6'
+    implementation 'one.util:streamex:0.8.1'
+
+    implementation 'org.apache.ant:ant:1.10.12'
+    implementation 'org.apache.ant:ant-launcher:1.10.12'
+    implementation 'org.apache.ant:ant-commons-net:1.10.12'
+    implementation 'org.apache.ant:ant-javamail:1.10.12'
+    implementation 'org.apache.ant:ant-jsch:1.10.12'
+    implementation 'org.apache.ivy:ivy:2.5.0'
+
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'org.bouncycastle:bcpg-jdk15on:1.70'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.15'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.13'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'org.glassfish:javax.json:1.1.4'
+
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+
+    testImplementation 'junit:junit:4.13.2'
+}
+
+application {
+    mainClass = 'net.filebot.Main'
+}
+
+tasks.named('test') {
+    useJUnit()
+    include 'net/filebot/util/FileUtilitiesTest.class'
+    include 'net/filebot/format/ExpressionFormatTest.class'
+    include 'net/filebot/similarity/SeasonEpisodeMatcherTest.class'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'net.filebot.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

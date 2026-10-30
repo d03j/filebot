@@ -1,4 +1,4 @@
-name: Java CI with Ant
+name: Java CI with Gradle
 
 on:
   push:
@@ -19,21 +19,8 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
-    - name: Download Ivy
-      run: |
-        mkdir -p lib/ivy
-        curl -sL https://repo1.maven.org/maven2/org/apache/ivy/ivy/2.5.2/ivy-2.5.2.jar -o /tmp/ivy.jar
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
-    - name: Resolve Ivy Dependencies
-      run: |
-        java -jar /tmp/ivy.jar -ivy ivy.xml -retrieve "lib/ivy/[type]/[artifact].[ext]"
-
-    - name: Build with Ant
-      run: ant build
-
-    - name: Run Tests
-      run: |
-        find lib/ivy/jar lib/ivy/bundle lib/jars -name "*.jar" | tr '\n' ':' > classpath.txt
-        rsync -av --exclude='*.java' source/ build/
-        javac -cp "$(cat classpath.txt)" -d build $(find test -name "*.java")
-        java -cp "build:$(cat classpath.txt)" org.junit.runner.JUnitCore net.filebot.util.FileUtilitiesTest net.filebot.format.ExpressionFormatTest net.filebot.similarity.SeasonEpisodeMatcherTest
+    - name: Build and Test with Gradle
+      run: gradle build
