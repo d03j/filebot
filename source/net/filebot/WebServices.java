@@ -65,7 +65,7 @@ public final class WebServices {
 	public static final ID3Lookup MediaInfoID3 = new ID3Lookup();
 
 	public static EpisodeListProvider[] getEpisodeListProviders() {
-		return new EpisodeListProvider[] { TVmaze, AniDB, TheMovieDB_TV };
+		return new EpisodeListProvider[] { TheMovieDB_TV, AniDB, TVmaze };
 	}
 
 	public static MovieIdentificationService[] getMovieIdentificationServices() {
