@@ -496,13 +496,27 @@ public class ReleaseInfo {
 				Cache cache = Cache.getCache("data", CacheType.Persistent);
 				byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
 
-				// all data file are xz compressed
-				try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
-					return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+				// verify header or minimum size before attempting XZ decompression
+				if (bytes != null && bytes.length > 6) {
+					// XZ magic bytes: 0xFD, '7', 'z', 'X', 'Z', 0x00
+					boolean isXz = (bytes[0] == (byte) 0xFD && bytes[1] == '7' && bytes[2] == 'z' && bytes[3] == 'X' && bytes[4] == 'Z' && bytes[5] == 0x00);
+					if (isXz) {
+						try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
+							return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+						} catch (Throwable e) {
+							// corrupted or truncated XZ stream
+						}
+					} else {
+						// uncompressed text in cache
+						try (BufferedReader text = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), UTF_8))) {
+							return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+						}
+					}
 				}
-			} catch (Exception e) {
-				return generator.apply(0);
+			} catch (Throwable e) {
+				// ignore and return empty array
 			}
+			return generator.apply(0);
 		};
 	}
 
