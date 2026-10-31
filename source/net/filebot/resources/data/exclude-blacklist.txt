@@ -1,3 +1,2 @@
-.*[.](nfo|sfv|srr|srt|sub|idx|txt|url|torrent|jpg|jpeg|png|gif|ico|cue|log)
 .*[.]sample[.].*
 .*[-._ ](sample|proof|trailer|sample\d+)[-._ ].*
