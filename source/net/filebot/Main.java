@@ -396,6 +396,14 @@ public class Main {
 		if (System.getProperty("glass.platform") == null && System.getenv("DISPLAY") != null) {
 			System.setProperty("glass.platform", "gtk");
 		}
+		// JavaFX software rendering over remote displays
+		if (System.getProperty("prism.order") == null) {
+			System.setProperty("prism.order", "sw");
+		}
+		// Support non-reparenting Wayland window managers (e.g. Sway, Hyprland, Weston)
+		if (System.getProperty("_JAVA_AWT_WM_NONREPARENTING") == null) {
+			System.setProperty("_JAVA_AWT_WM_NONREPARENTING", "1");
+		}
 
 		System.setProperty("unixfs", Boolean.toString(args.unixfs));
 		System.setProperty("useExtendedFileAttributes", Boolean.toString(!args.disableExtendedAttributes));

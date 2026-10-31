@@ -177,6 +177,8 @@ public class MainFrame extends JFrame {
 			headerPanel.setTitle(selectedBuilder.getName());
 			selectedPanel.setVisible(true);
 			SwingEventBus.getInstance().register(selectedPanel);
+			contentPane.revalidate();
+			contentPane.repaint();
 		}
 	}
 
