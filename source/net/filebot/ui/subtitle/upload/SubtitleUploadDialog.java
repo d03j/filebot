@@ -37,7 +37,6 @@ import net.filebot.util.ui.EmptySelectionModel;
 import net.filebot.web.Movie;
 import net.filebot.web.OpenSubtitlesClient;
 import net.filebot.web.SearchResult;
-import net.filebot.web.TheTVDBSeriesInfo;
 import net.filebot.web.VideoHashSubtitleService.CheckResult;
 import net.miginfocom.swing.MigLayout;
 import one.util.streamex.StreamEx;
@@ -164,11 +163,10 @@ public class SubtitleUploadDialog extends JDialog {
 					if (MediaDetection.isEpisode(mapping.getVideo().getPath(), true)) {
 						List<String> seriesNames = MediaDetection.detectSeriesNames(singleton(mapping.getVideo()), false, Locale.ENGLISH);
 						NAMES: for (String name : seriesNames) {
-							List<SearchResult> options = WebServices.TheTVDB.search(name, Locale.ENGLISH);
+							List<SearchResult> options = WebServices.TVmaze.search(name, Locale.ENGLISH);
 							for (SearchResult entry : options) {
-								TheTVDBSeriesInfo seriesInfo = (TheTVDBSeriesInfo) WebServices.TheTVDB.getSeriesInfo(entry, Locale.ENGLISH);
-								if (seriesInfo.getImdbId() != null) {
-									int imdbId = grepImdbId(seriesInfo.getImdbId()).iterator().next();
+								int imdbId = entry.getId();
+								if (imdbId > 0) {
 									mapping.setIdentity(WebServices.OpenSubtitles.getMovieDescriptor(new Movie(imdbId), Locale.ENGLISH));
 									break NAMES;
 								}

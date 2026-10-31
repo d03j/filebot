@@ -367,9 +367,6 @@ public class ReleaseInfo {
 		return seriesMappings.get();
 	}
 
-	public SearchResult[] getTheTVDBIndex() throws Exception {
-		return tvdbIndex.get();
-	}
 
 	public SearchResult[] getAnidbIndex() throws Exception {
 		return anidbIndex.get();
@@ -442,7 +439,6 @@ public class ReleaseInfo {
 	private final Resource<String[]> queryBlacklist = lines("url.query-blacklist", Cache.ONE_WEEK);
 	private final Resource<String[]> excludeBlacklist = lines("url.exclude-blacklist", Cache.ONE_WEEK);
 
-	private final Resource<SearchResult[]> tvdbIndex = tsv("url.thetvdb-index", Cache.ONE_WEEK, this::parseSeries, SearchResult[]::new);
 	private final Resource<SearchResult[]> anidbIndex = tsv("url.anidb-index", Cache.ONE_WEEK, this::parseSeries, SearchResult[]::new);
 
 	private final Resource<Movie[]> movieIndex = tsv("url.movie-list", Cache.ONE_MONTH, this::parseMovie, Movie[]::new);
@@ -486,13 +482,41 @@ public class ReleaseInfo {
 
 	protected <A> Resource<A[]> resource(String name, Duration expirationTime, Function<String, A> parse, IntFunction<A[]> generator) {
 		return () -> {
-			Cache cache = Cache.getCache("data", CacheType.Persistent);
-			byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
-
-			// all data file are xz compressed
-			try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
-				return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+			String bundledResourceName = "/net/filebot/resources/data/" + name.replace("url.", "") + ".txt";
+			URL bundledUrl = ReleaseInfo.class.getResource(bundledResourceName);
+			if (bundledUrl != null) {
+				try (BufferedReader text = new BufferedReader(new InputStreamReader(bundledUrl.openStream(), UTF_8))) {
+					return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+				} catch (Exception e) {
+					// fallback to remote
+				}
 			}
+
+			try {
+				Cache cache = Cache.getCache("data", CacheType.Persistent);
+				byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
+
+				// verify header or minimum size before attempting XZ decompression
+				if (bytes != null && bytes.length > 6) {
+					// XZ magic bytes: 0xFD, '7', 'z', 'X', 'Z', 0x00
+					boolean isXz = (bytes[0] == (byte) 0xFD && bytes[1] == '7' && bytes[2] == 'z' && bytes[3] == 'X' && bytes[4] == 'Z' && bytes[5] == 0x00);
+					if (isXz) {
+						try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
+							return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+						} catch (Throwable e) {
+							// corrupted or truncated XZ stream
+						}
+					} else {
+						// uncompressed text in cache
+						try (BufferedReader text = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bytes), UTF_8))) {
+							return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+						}
+					}
+				}
+			} catch (Throwable e) {
+				// ignore and return empty array
+			}
+			return generator.apply(0);
 		};
 	}
 
