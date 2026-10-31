@@ -32,18 +32,26 @@ To build only the fat JAR:
 
 The compiled standalone JAR will be located at:
 ```bash
-build/libs/app.jar
+build/libs/filebot.jar
 ```
+
+*(In GitHub Actions, you can download `filebot.jar` directly from the workflow run's "Artifacts" section).*
 
 ### Running FileBot
 
 ```bash
-java -jar build/libs/app.jar
+java -jar build/libs/filebot.jar
+```
+
+#### Running over SSH (X11 / Wayland Forwarding)
+When running remotely over SSH (`ssh -X` or `ssh -Y`) into or from a Wayland desktop, hardware XRender / OpenGL acceleration can cause UI corruption or blank windows. FileBot automatically detects remote display connections, but you can also run with software rendering explicitly:
+```bash
+java -Dsun.java2d.xrender=false -Dsun.java2d.opengl=false -jar build/libs/filebot.jar
 ```
 
 Or run via CLI:
 ```bash
-java -jar build/libs/app.jar -rename /path/to/media --db TheMovieDB -non-strict
+java -jar build/libs/filebot.jar -rename /path/to/media --db TheMovieDB -non-strict
 ```
 
 ## License

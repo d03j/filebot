@@ -374,6 +374,18 @@ public class Main {
 		System.setProperty("grape.root", ApplicationFolder.AppData.resolve("grape").getAbsolutePath());
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
+		// Wayland and remote X11 / SSH forwarding rendering fixes
+		if (System.getProperty("sun.java2d.xrender") == null) {
+			System.setProperty("sun.java2d.xrender", "false");
+		}
+		if (System.getProperty("sun.java2d.opengl") == null && (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null)) {
+			System.setProperty("sun.java2d.opengl", "false");
+		}
+		if (System.getProperty("glass.platform") == null && System.getenv("WAYLAND_DISPLAY") != null && System.getenv("DISPLAY") != null) {
+			// Prefer X11 (XWayland) for Swing/JavaFX interop over remote/Wayland sessions
+			System.setProperty("glass.platform", "gtk");
+		}
+
 		System.setProperty("unixfs", Boolean.toString(args.unixfs));
 		System.setProperty("useExtendedFileAttributes", Boolean.toString(!args.disableExtendedAttributes));
 		System.setProperty("useCreationDate", Boolean.toString(!args.disableExtendedAttributes));
