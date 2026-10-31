@@ -96,6 +96,7 @@ tasks.named('test') {
     include 'net/filebot/util/FileUtilitiesTest.class'
     include 'net/filebot/format/ExpressionFormatTest.class'
     include 'net/filebot/similarity/SeasonEpisodeMatcherTest.class'
+    include 'net/filebot/subtitle/SubtitleLanguageTest.class'
 }
 
 jar {
