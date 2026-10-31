@@ -482,12 +482,26 @@ public class ReleaseInfo {
 
 	protected <A> Resource<A[]> resource(String name, Duration expirationTime, Function<String, A> parse, IntFunction<A[]> generator) {
 		return () -> {
-			Cache cache = Cache.getCache("data", CacheType.Persistent);
-			byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
+			String bundledResourceName = "/net/filebot/resources/data/" + name.replace("url.", "") + ".txt";
+			URL bundledUrl = ReleaseInfo.class.getResource(bundledResourceName);
+			if (bundledUrl != null) {
+				try (BufferedReader text = new BufferedReader(new InputStreamReader(bundledUrl.openStream(), UTF_8))) {
+					return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+				} catch (Exception e) {
+					// fallback to remote
+				}
+			}
 
-			// all data file are xz compressed
-			try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
-				return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+			try {
+				Cache cache = Cache.getCache("data", CacheType.Persistent);
+				byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
+
+				// all data file are xz compressed
+				try (BufferedReader text = new BufferedReader(new InputStreamReader(new XZInputStream(new ByteArrayInputStream(bytes)), UTF_8))) {
+					return text.lines().filter(s -> s.length() > 0).map(parse).filter(Objects::nonNull).toArray(generator);
+				}
+			} catch (Exception e) {
+				return generator.apply(0);
 			}
 		};
 	}
