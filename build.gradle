@@ -112,4 +112,25 @@ jar {
         exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    doLast {
+        project.copy {
+            from 'installer/portable/filebot.sh'
+            into 'build/libs'
+            filePermissions {
+                user {
+                    read = true
+                    write = true
+                    execute = true
+                }
+                group {
+                    read = true
+                    execute = true
+                }
+                other {
+                    read = true
+                    execute = true
+                }
+            }
+        }
+    }
 }

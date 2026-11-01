@@ -41,6 +41,10 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
+
 import org.kohsuke.args4j.CmdLineException;
 import org.w3c.dom.Document;
 
@@ -63,8 +67,25 @@ import net.miginfocom.swing.MigLayout;
 
 public class Main {
 
+	public interface PosixLibC extends Library {
+		int setenv(String name, String value, int overwrite);
+	}
+
 	public static void main(String[] argumentArray) {
 		try {
+			// configure POSIX environment before AWT/JavaFX initialization
+			if (Platform.isLinux()) {
+				try {
+					PosixLibC libc = (PosixLibC) Native.loadLibrary("c", PosixLibC.class);
+					libc.setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
+					if (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null) {
+						libc.setenv("GDK_BACKEND", "x11", 1);
+					}
+				} catch (Throwable t) {
+					// fallback gracefully if libc / JNA cannot be loaded
+				}
+			}
+
 			// parse arguments
 			ArgumentBean args = ArgumentBean.parse(argumentArray);
 

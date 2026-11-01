@@ -44,12 +44,18 @@ java -jar build/libs/filebot.jar
 ```
 
 #### Running over SSH (X11 / Wayland Forwarding)
-When running remotely over SSH (`ssh -X` or `ssh -Y`) into or from a Wayland desktop (such as GNOME Wayland, Sway, or Hyprland), non-reparenting window managers require `_JAVA_AWT_WM_NONREPARENTING=1` to be set in your shell environment prior to launching Java, along with disabling XRender acceleration to prevent blank windows:
+When running remotely over SSH (`ssh -X` or `ssh -Y`) from a Wayland client (e.g. Sway, Hyprland, GNOME Wayland) into a remote host (even one running Wayland):
+- X11 forwarding runs seamlessly via the client's XWayland server.
+- FileBot automatically sets `_JAVA_AWT_WM_NONREPARENTING=1`, `GDK_BACKEND=x11`, and safe software 2D pipeline rendering properties (`sun.java2d.xrender=false`, `sun.java2d.opengl=false`, `prism.order=sw`) on startup.
+- You can connect and launch the application directly:
 ```bash
-export _JAVA_AWT_WM_NONREPARENTING=1
-java -Dsun.java2d.xrender=false -Dsun.java2d.opengl=false -jar build/libs/filebot.jar
+# On your Wayland client:
+ssh -X user@remote-host
+
+# On the remote host:
+java -jar build/libs/filebot.jar
 ```
-*(If using the provided launcher scripts like `installer/portable/filebot.sh`, this is configured automatically).*
+*(If using the provided launcher scripts like `installer/portable/filebot.sh`, these settings are also pre-configured in the wrapper shell environment).*
 
 Or run via CLI:
 ```bash
