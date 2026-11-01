@@ -148,10 +148,10 @@ public class Main {
 			}
 
 			// check if application help should be shown
-			if (!"skip".equals(System.getProperty("application.help"))) {
+			if (!"skip".equals(System.getProperty("application.help")) && System.getenv("SSH_CONNECTION") == null && System.getenv("SSH_CLIENT") == null) {
 				try {
 					checkGettingStarted();
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					debug.log(Level.WARNING, "Failed to show Getting Started help", e);
 				}
 			}
@@ -359,7 +359,36 @@ public class Main {
 
 			// set default security manager
 			System.setSecurityManager(new SecurityManager());
-		} catch (Exception e) {
+	// Wayland, non-reparenting window managers, and remote X11 / SSH forwarding rendering fixes
+		if (System.getProperty("sun.java2d.xrender") == null) {
+			System.setProperty("sun.java2d.xrender", "false");
+		}
+		if (System.getProperty("sun.java2d.opengl") == null) {
+			System.setProperty("sun.java2d.opengl", "false");
+		}
+		if (System.getProperty("sun.java2d.pmoffscreen") == null) {
+			System.setProperty("sun.java2d.pmoffscreen", "false");
+		}
+		if (System.getProperty("sun.java2d.x11pmblit") == null) {
+			System.setProperty("sun.java2d.x11pmblit", "false");
+		}
+		if (System.getProperty("awt.toolkit") == null) {
+			System.setProperty("awt.toolkit", "sun.awt.X11.XToolkit");
+		}
+		if (System.getProperty("sun.awt.noerasebackground") == null) {
+			System.setProperty("sun.awt.noerasebackground", "true");
+		}
+		if (System.getProperty("glass.platform") == null && System.getenv("DISPLAY") != null) {
+			System.setProperty("glass.platform", "gtk");
+		}
+		// JavaFX software rendering over remote displays
+		if (System.getProperty("prism.order") == null) {
+			System.setProperty("prism.order", "sw");
+		}
+		// Support non-reparenting Wayland window managers (e.g. Sway, Hyprland, Weston)
+		if (System.getProperty("_JAVA_AWT_WM_NONREPARENTING") == null) {
+			System.setProperty("_JAVA_AWT_WM_NONREPARENTING", "1");
+		}		} catch (Exception e) {
 			// security manager was probably set via system property
 			debug.log(Level.WARNING, e.getMessage(), e);
 		}
@@ -374,16 +403,35 @@ public class Main {
 		System.setProperty("grape.root", ApplicationFolder.AppData.resolve("grape").getAbsolutePath());
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
 
-		// Wayland and remote X11 / SSH forwarding rendering fixes
+		// Wayland, non-reparenting window managers, and remote X11 / SSH forwarding rendering fixes
 		if (System.getProperty("sun.java2d.xrender") == null) {
 			System.setProperty("sun.java2d.xrender", "false");
 		}
-		if (System.getProperty("sun.java2d.opengl") == null && (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null)) {
+		if (System.getProperty("sun.java2d.opengl") == null) {
 			System.setProperty("sun.java2d.opengl", "false");
 		}
-		if (System.getProperty("glass.platform") == null && System.getenv("WAYLAND_DISPLAY") != null && System.getenv("DISPLAY") != null) {
-			// Prefer X11 (XWayland) for Swing/JavaFX interop over remote/Wayland sessions
+		if (System.getProperty("sun.java2d.pmoffscreen") == null) {
+			System.setProperty("sun.java2d.pmoffscreen", "false");
+		}
+		if (System.getProperty("sun.java2d.x11pmblit") == null) {
+			System.setProperty("sun.java2d.x11pmblit", "false");
+		}
+		if (System.getProperty("awt.toolkit") == null) {
+			System.setProperty("awt.toolkit", "sun.awt.X11.XToolkit");
+		}
+		if (System.getProperty("sun.awt.noerasebackground") == null) {
+			System.setProperty("sun.awt.noerasebackground", "true");
+		}
+		if (System.getProperty("glass.platform") == null && System.getenv("DISPLAY") != null) {
 			System.setProperty("glass.platform", "gtk");
+		}
+		// JavaFX software rendering over remote displays
+		if (System.getProperty("prism.order") == null) {
+			System.setProperty("prism.order", "sw");
+		}
+		// Support non-reparenting Wayland window managers (e.g. Sway, Hyprland, Weston)
+		if (System.getProperty("_JAVA_AWT_WM_NONREPARENTING") == null) {
+			System.setProperty("_JAVA_AWT_WM_NONREPARENTING", "1");
 		}
 
 		System.setProperty("unixfs", Boolean.toString(args.unixfs));
