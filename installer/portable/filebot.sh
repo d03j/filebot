@@ -25,6 +25,13 @@ if [ -z "$USER" ]; then
 	export USER=`whoami`
 fi
 
+# Fix blank window rendering on Wayland and non-reparenting window managers
+export _JAVA_AWT_WM_NONREPARENTING=1
+export AWT_TOOLKIT="sun.awt.X11.XToolkit"
+if [ ! -z "$WAYLAND_DISPLAY" ] || [ ! -z "$SSH_CONNECTION" ] || [ ! -z "$SSH_CLIENT" ]; then
+	export GDK_BACKEND=x11
+fi
+
 # force JVM language and encoding settings
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"

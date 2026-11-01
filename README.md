@@ -44,10 +44,12 @@ java -jar build/libs/filebot.jar
 ```
 
 #### Running over SSH (X11 / Wayland Forwarding)
-When running remotely over SSH (`ssh -X` or `ssh -Y`) into or from a Wayland desktop, hardware XRender / OpenGL acceleration can cause UI corruption or blank windows. FileBot automatically detects remote display connections, but you can also run with software rendering explicitly:
+When running remotely over SSH (`ssh -X` or `ssh -Y`) into or from a Wayland desktop (such as GNOME Wayland, Sway, or Hyprland), non-reparenting window managers require `_JAVA_AWT_WM_NONREPARENTING=1` to be set in your shell environment prior to launching Java, along with disabling XRender acceleration to prevent blank windows:
 ```bash
+export _JAVA_AWT_WM_NONREPARENTING=1
 java -Dsun.java2d.xrender=false -Dsun.java2d.opengl=false -jar build/libs/filebot.jar
 ```
+*(If using the provided launcher scripts like `installer/portable/filebot.sh`, this is configured automatically).*
 
 Or run via CLI:
 ```bash

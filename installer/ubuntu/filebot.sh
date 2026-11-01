@@ -16,6 +16,13 @@ fi
 APP_DATA="$HOME/.config/FileBot"
 APP_CACHE="$HOME/.cache/FileBot"
 
+# Fix blank window rendering on Wayland and non-reparenting window managers
+export _JAVA_AWT_WM_NONREPARENTING=1
+export AWT_TOOLKIT="sun.awt.X11.XToolkit"
+if [ ! -z "$WAYLAND_DISPLAY" ] || [ ! -z "$SSH_CONNECTION" ] || [ ! -z "$SSH_CLIENT" ]; then
+	export GDK_BACKEND=x11
+fi
+
 # use embedded JRE
 JAVA_CMD="$APP_ROOT/jre/bin/java"
 

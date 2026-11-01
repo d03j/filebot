@@ -422,8 +422,7 @@ public class ReleaseInfo {
 	}
 
 	public String[] getSubtitleCategoryTags() {
-		String tags = getProperty("pattern.subtitle.tags");
-		return PIPE.split(tags);
+		return new String[] { "forced", "sdh", "hi", "SDH", "HI" };
 	}
 
 	private final Resource<Map<Pattern, String>> seriesMappings = resource("url.series-mappings", Cache.ONE_WEEK, Function.identity(), String[]::new).transform(lines -> {

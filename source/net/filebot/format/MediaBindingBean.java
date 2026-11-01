@@ -525,14 +525,23 @@ public class MediaBindingBean {
 			return null;
 		}
 
-		Language language = getLanguageTag();
+		Language language = null;
+		try {
+			language = getLanguageTag();
+		} catch (Exception e) {
+			// language tag not found
+		}
+
+		String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
+
 		if (language != null) {
 			String tag = '.' + language.getISO3B();
-			String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
 			if (category != null) {
 				return tag + '.' + category;
 			}
 			return tag;
+		} else if (category != null) {
+			return '.' + category;
 		}
 
 		return null;
