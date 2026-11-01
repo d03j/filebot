@@ -200,7 +200,7 @@ public class AutoDetection {
 	}
 
 	private List<File> getVideoFiles(File parent) {
-		return stream(files).filter(it -> parent.equals(it.getParentFile())).filter(VIDEO_FILES::accept).collect(toList());
+		return stream(files).filter(it -> Objects.equals(parent, it.getParentFile())).filter(VIDEO_FILES::accept).collect(toList());
 	}
 
 	private static final Pattern YEAR = Pattern.compile("\\D(?:19|20)\\d{2}\\D");

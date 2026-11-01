@@ -41,5 +41,26 @@
 		<dependency org="org.apache.httpcomponents" name="httpmime" rev="4.+" />
 		<dependency org="org.apache.httpcomponents" name="httpclient" rev="4.+" />
 		<dependency org="org.glassfish" name="javax.json" rev="1.+" />
+
+		<!-- JAXB for Java 11+ -->
+		<dependency org="javax.xml.bind" name="jaxb-api" rev="2.3.1" />
+		<dependency org="org.glassfish.jaxb" name="jaxb-runtime" rev="2.3.3" />
+
+		<!-- JavaFX for Java 11+ -->
+		<dependency org="org.openjfx" name="javafx-controls" rev="21">
+			<artifact name="javafx-controls" type="jar" ext="jar" m:classifier="linux" xmlns:m="http://ant.apache.org/ivy/maven" />
+		</dependency>
+		<dependency org="org.openjfx" name="javafx-swing" rev="21">
+			<artifact name="javafx-swing" type="jar" ext="jar" m:classifier="linux" xmlns:m="http://ant.apache.org/ivy/maven" />
+		</dependency>
+		<dependency org="org.openjfx" name="javafx-web" rev="21">
+			<artifact name="javafx-web" type="jar" ext="jar" m:classifier="linux" xmlns:m="http://ant.apache.org/ivy/maven" />
+		</dependency>
+		<dependency org="org.openjfx" name="javafx-graphics" rev="21">
+			<artifact name="javafx-graphics" type="jar" ext="jar" m:classifier="linux" xmlns:m="http://ant.apache.org/ivy/maven" />
+		</dependency>
+		<dependency org="org.openjfx" name="javafx-base" rev="21">
+			<artifact name="javafx-base" type="jar" ext="jar" m:classifier="linux" xmlns:m="http://ant.apache.org/ivy/maven" />
+		</dependency>
 	</dependencies>
 </ivy-module>

@@ -64,7 +64,6 @@ import net.filebot.web.SeriesInfo;
 import net.filebot.web.SimpleDate;
 import net.filebot.web.SortOrder;
 import net.filebot.web.TMDbClient.MovieInfo;
-import net.filebot.web.TheTVDBSeriesInfo;
 
 public class MediaBindingBean {
 
@@ -247,11 +246,6 @@ public class MediaBindingBean {
 		}
 
 		if (infoObject instanceof Episode) {
-			// force English series name for TheTVDB data
-			if (WebServices.TheTVDB.getIdentifier().equals(getSeriesInfo().getDatabase())) {
-				return WebServices.TheTVDB.getSeriesInfo(getSeriesInfo().getId(), Locale.ENGLISH).getName();
-			}
-
 			// default to series info name (for anime this would be the primary title)
 			return getSeriesInfo().getName();
 		}
@@ -531,14 +525,23 @@ public class MediaBindingBean {
 			return null;
 		}
 
-		Language language = getLanguageTag();
+		Language language = null;
+		try {
+			language = getLanguageTag();
+		} catch (Exception e) {
+			// language tag not found
+		}
+
+		String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
+
 		if (language != null) {
 			String tag = '.' + language.getISO3B();
-			String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
 			if (category != null) {
 				return tag + '.' + category;
 			}
 			return tag;
+		} else if (category != null) {
+			return '.' + category;
 		}
 
 		return null;
@@ -634,14 +637,6 @@ public class MediaBindingBean {
 		Object metaInfo = null;
 
 		try {
-			if (infoObject instanceof Episode) {
-				if (WebServices.TheTVDB.getIdentifier().equals(getSeriesInfo().getDatabase())) {
-					TheTVDBSeriesInfo extendedSeriesInfo = (TheTVDBSeriesInfo) WebServices.TheTVDB.getSeriesInfo(getSeriesInfo().getId(), Locale.ENGLISH);
-					if (extendedSeriesInfo.getImdbId() != null) {
-						metaInfo = WebServices.OMDb.getMovieInfo(new Movie(grepImdbId(extendedSeriesInfo.getImdbId()).iterator().next()));
-					}
-				}
-			}
 			if (infoObject instanceof Movie) {
 				if (getMovie().getTmdbId() > 0) {
 					MovieInfo movieInfo = WebServices.TheMovieDB.getMovieInfo(getMovie(), Locale.ENGLISH, false);

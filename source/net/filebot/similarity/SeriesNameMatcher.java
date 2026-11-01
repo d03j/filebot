@@ -63,11 +63,11 @@ public class SeriesNameMatcher {
 
 		// group files by parent folder
 		for (Entry<File, String[]> entry : mapNamesByFolder(files).entrySet()) {
-			String parent = entry.getKey().getName();
+			String parent = entry.getKey() == null ? "" : entry.getKey().getName();
 			String[] names = entry.getValue();
 
 			for (String nameMatch : matchAll(names)) {
-				String commonMatch = commonSequenceMatcher.matchFirstCommonSequence(nameMatch, parent);
+				String commonMatch = parent.isEmpty() ? null : commonSequenceMatcher.matchFirstCommonSequence(nameMatch, parent);
 				float similarity = commonMatch == null ? 0 : metric.getSimilarity(commonMatch, nameMatch);
 
 				// prefer common match, but only if it's very similar to the original match
