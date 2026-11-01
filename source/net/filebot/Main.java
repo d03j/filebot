@@ -359,7 +359,36 @@ public class Main {
 
 			// set default security manager
 			System.setSecurityManager(new SecurityManager());
-		} catch (Exception e) {
+	// Wayland, non-reparenting window managers, and remote X11 / SSH forwarding rendering fixes
+		if (System.getProperty("sun.java2d.xrender") == null) {
+			System.setProperty("sun.java2d.xrender", "false");
+		}
+		if (System.getProperty("sun.java2d.opengl") == null) {
+			System.setProperty("sun.java2d.opengl", "false");
+		}
+		if (System.getProperty("sun.java2d.pmoffscreen") == null) {
+			System.setProperty("sun.java2d.pmoffscreen", "false");
+		}
+		if (System.getProperty("sun.java2d.x11pmblit") == null) {
+			System.setProperty("sun.java2d.x11pmblit", "false");
+		}
+		if (System.getProperty("awt.toolkit") == null) {
+			System.setProperty("awt.toolkit", "sun.awt.X11.XToolkit");
+		}
+		if (System.getProperty("sun.awt.noerasebackground") == null) {
+			System.setProperty("sun.awt.noerasebackground", "true");
+		}
+		if (System.getProperty("glass.platform") == null && System.getenv("DISPLAY") != null) {
+			System.setProperty("glass.platform", "gtk");
+		}
+		// JavaFX software rendering over remote displays
+		if (System.getProperty("prism.order") == null) {
+			System.setProperty("prism.order", "sw");
+		}
+		// Support non-reparenting Wayland window managers (e.g. Sway, Hyprland, Weston)
+		if (System.getProperty("_JAVA_AWT_WM_NONREPARENTING") == null) {
+			System.setProperty("_JAVA_AWT_WM_NONREPARENTING", "1");
+		}		} catch (Exception e) {
 			// security manager was probably set via system property
 			debug.log(Level.WARNING, e.getMessage(), e);
 		}
