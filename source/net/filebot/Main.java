@@ -113,7 +113,7 @@ public class Main {
 
 			// initialize this stuff before anything else
 			CacheManager.getInstance();
-			initializeSecurityManager();
+			// initializeSecurityManager();
 
 			// initialize history spooler
 			HistorySpooler.getInstance().setPersistentHistoryEnabled(useRenameHistory());
@@ -148,10 +148,10 @@ public class Main {
 			}
 
 			// check if application help should be shown
-			if (!"skip".equals(System.getProperty("application.help"))) {
+			if (!"skip".equals(System.getProperty("application.help")) && System.getenv("SSH_CONNECTION") == null && System.getenv("SSH_CLIENT") == null) {
 				try {
 					checkGettingStarted();
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					debug.log(Level.WARNING, "Failed to show Getting Started help", e);
 				}
 			}
@@ -210,17 +210,6 @@ public class Main {
 
 				// make sure any long running operations are done now and not later on the shutdown hook thread
 				HistorySpooler.getInstance().commit();
-
-				// show donation / review reminders to power users (more than 2000 renames)
-				int renameCount = HistorySpooler.getInstance().getPersistentHistoryTotalSize();
-
-				if (renameCount > 2000 && Math.random() <= 0.777) {
-					if (isAppStore()) {
-						showAppStoreReviewReminder();
-					} else {
-						showDonationReminder();
-					}
-				}
 
 				System.exit(0);
 			}
@@ -312,48 +301,6 @@ public class Main {
 		}
 	}
 
-	private static void showDonationReminder() {
-		PreferencesEntry<String> donation = Settings.forPackage(Main.class).entry("donation").defaultValue("0");
-		int donationRev = Integer.parseInt(donation.getValue());
-		int currentRev = getApplicationRevisionNumber();
-		if (donationRev >= currentRev) {
-			return;
-		}
-
-		String message = String.format("<html><p style='font-size:16pt; font-weight:bold'>Thank you for using FileBot!</p><br><p>It has taken many nights to develop this application. If you enjoy using it,<br>please consider a donation to me and my work. It will help to<br>make FileBot even better!<p><p style='font-size:14pt; font-weight:bold'>You've renamed %,d files.</p><br><html>", HistorySpooler.getInstance().getPersistentHistoryTotalSize());
-		String[] actions = { "Donate! :)", donationRev > 0 ? "Not this time" : "Later" };
-		JOptionPane pane = new JOptionPane(message, INFORMATION_MESSAGE, YES_NO_OPTION, ResourceManager.getIcon("message.donate"), actions, actions[0]);
-		pane.createDialog(null, "Please Donate").setVisible(true);
-
-		if (pane.getValue() == actions[0]) {
-			openURI(getDonateURL());
-			donation.setValue(String.valueOf(currentRev));
-		} else {
-			if (donationRev > 0 && donationRev < currentRev) {
-				donation.setValue(String.valueOf(currentRev));
-			}
-		}
-	}
-
-	private static void showAppStoreReviewReminder() {
-		PreferencesEntry<String> donation = Settings.forPackage(Main.class).entry("review").defaultValue("0");
-		int donationRev = Integer.parseInt(donation.getValue());
-		if (donationRev > 0) {
-			return;
-		}
-
-		// make sure review reminder is shown at most once (per machine)
-		int currentRev = getApplicationRevisionNumber();
-		donation.setValue(String.valueOf(currentRev));
-
-		String message = String.format("<html><p style='font-size:16pt; font-weight:bold'>Thank you for using FileBot!</p><br><p>It has taken many nights to develop this application. If you enjoy using it,<br>please consider writing a nice little review on the %s.<p><p style='font-size:14pt; font-weight:bold'>You've renamed %,d files.</p><br><html>", getAppStoreName(), HistorySpooler.getInstance().getPersistentHistoryTotalSize());
-		String[] actions = { "Review! I like FileBot. :)", "Never! Don't bother me again." };
-		JOptionPane pane = new JOptionPane(message, INFORMATION_MESSAGE, YES_NO_OPTION, ResourceManager.getIcon("window.icon.large"), actions, actions[0]);
-		pane.createDialog(null, "Please rate FileBot").setVisible(true);
-		if (pane.getValue() == actions[0]) {
-			openURI(getAppStoreLink());
-		}
-	}
 
 	private static void openURI(String uri) {
 		try {
@@ -426,6 +373,37 @@ public class Main {
 		System.setProperty("swing.crossplatformlaf", "javax.swing.plaf.nimbus.NimbusLookAndFeel");
 		System.setProperty("grape.root", ApplicationFolder.AppData.resolve("grape").getAbsolutePath());
 		System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.NoOpLog");
+
+		// Wayland, non-reparenting window managers, and remote X11 / SSH forwarding rendering fixes
+		if (System.getProperty("sun.java2d.xrender") == null) {
+			System.setProperty("sun.java2d.xrender", "false");
+		}
+		if (System.getProperty("sun.java2d.opengl") == null) {
+			System.setProperty("sun.java2d.opengl", "false");
+		}
+		if (System.getProperty("sun.java2d.pmoffscreen") == null) {
+			System.setProperty("sun.java2d.pmoffscreen", "false");
+		}
+		if (System.getProperty("sun.java2d.x11pmblit") == null) {
+			System.setProperty("sun.java2d.x11pmblit", "false");
+		}
+		if (System.getProperty("awt.toolkit") == null) {
+			System.setProperty("awt.toolkit", "sun.awt.X11.XToolkit");
+		}
+		if (System.getProperty("sun.awt.noerasebackground") == null) {
+			System.setProperty("sun.awt.noerasebackground", "true");
+		}
+		if (System.getProperty("glass.platform") == null && System.getenv("DISPLAY") != null) {
+			System.setProperty("glass.platform", "gtk");
+		}
+		// JavaFX software rendering over remote displays
+		if (System.getProperty("prism.order") == null) {
+			System.setProperty("prism.order", "sw");
+		}
+		// Support non-reparenting Wayland window managers (e.g. Sway, Hyprland, Weston)
+		if (System.getProperty("_JAVA_AWT_WM_NONREPARENTING") == null) {
+			System.setProperty("_JAVA_AWT_WM_NONREPARENTING", "1");
+		}
 
 		System.setProperty("unixfs", Boolean.toString(args.unixfs));
 		System.setProperty("useExtendedFileAttributes", Boolean.toString(!args.disableExtendedAttributes));

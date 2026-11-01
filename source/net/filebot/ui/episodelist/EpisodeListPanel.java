@@ -79,7 +79,7 @@ public class EpisodeListPanel extends AbstractSearchPanel<EpisodeListProvider, E
 	@Override
 	protected Collection<String> getHistory(EpisodeListProvider engine) throws Exception {
 		final List<String> names = new ArrayList<String>(100000);
-		final SearchResult[] index = (engine == WebServices.AniDB) ? MediaDetection.releaseInfo.getAnidbIndex() : MediaDetection.releaseInfo.getTheTVDBIndex();
+		final SearchResult[] index = (engine == WebServices.AniDB) ? MediaDetection.releaseInfo.getAnidbIndex() : new SearchResult[0];
 		for (SearchResult it : index) {
 			for (String n : it.getEffectiveNames()) {
 				names.add(Normalization.removeTrailingBrackets(n));

@@ -25,7 +25,8 @@ public class FloodLimit {
 
 	public ScheduledFuture<?> acquirePermit() throws InterruptedException {
 		permits.acquire();
-		return TIMER.schedule(permits::release, releaseDelay, timeUnit);
+		Runnable releaseTask = permits::release;
+		return TIMER.schedule(releaseTask, releaseDelay, timeUnit);
 	}
 
 }

@@ -1,0 +1,2 @@
+.*[.]sample[.].*
+.*[-._ ](sample|proof|trailer|sample\d+)[-._ ].*
