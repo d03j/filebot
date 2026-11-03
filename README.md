@@ -9,13 +9,25 @@ This is a modern fork and refactor of FileBot 4.7.9 (originally created by redno
 - **TheTVDB Removed**: Stripped out TheTVDB integration in favor of TheMovieDB (TMDB), aligning natively with Jellyfin metadata workflows.
 - **No Reminders**: Removed upstream donation prompts and review popups.
 
-## Getting the Flatpak
+## Building & Running
 
-### Download from Releases
-Grab the latest pre-built `.flatpak` bundle directly from the [GitHub Releases](https://github.com/d03j/filebot/releases) page and install it locally:
+### Requirements
+- Java 21 JDK (e.g. Eclipse Temurin 21)
+
+### Build
+Build the standalone executable JAR using Gradle:
 
 ```bash
-flatpak install --user io.github.d03j.filebot-j21.flatpak
+./gradlew jar
+```
+
+The resulting JAR file will be located at `build/libs/filebot.jar`.
+
+### Run
+Launch FileBot:
+
+```bash
+java -jar build/libs/filebot.jar
 ```
 
 ## Credits & License
