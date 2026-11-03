@@ -31,6 +31,3 @@ jobs:
         name: filebot-package
         path: |
           build/libs/filebot.jar
-          build/libs/filebot.sh
-          flatpak/
-          packaging/
