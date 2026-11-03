@@ -1,96 +1,24 @@
-# FileBot
+# FileBot (Java 21 Fork)
 
-FileBot is the ultimate tool for organizing and renaming your movies, TV shows, anime, and downloading subtitles.
+This is a modern fork and refactor of FileBot 4.7.9 (originally created by rednoah), updated to run cleanly on modern Linux distributions.
 
-## Overview
+## Key Changes & Features
 
-This repository is a modern fork/refactor of FileBot 4.7.9 updated to run on **Java 21+** (Linux).
+- **Java 21 LTS**: Modernized codebase and build pipeline targeting Java 21.
+- **Remote Wayland / SSH Support**: Pre-configured window manager flags and environment variables (`_JAVA_AWT_WM_NONREPARENTING=1`, `GDK_BACKEND=x11`, and safe rendering fallbacks) so the GUI renders seamlessly when running remotely over `ssh -X` from Wayland client sessions (e.g., Hyprland, Sway, GNOME Wayland).
+- **TheTVDB Removed**: Stripped out TheTVDB integration in favor of TheMovieDB (TMDB), aligning natively with Jellyfin metadata workflows.
+- **No Reminders**: Removed upstream donation prompts and review popups.
 
-### Key Features
-- **Java 21+ Compatibility**: Modernized source and build configurations targeting Java 21 LTS with Gradle.
-- **TV & Movie Metadata**: Automated media renaming with default episode lookup powered by **TheMovieDB** (and AniDB for anime).
-- **Subtitles**: Subtitle matching and downloading using OpenSubtitles with complete support for language tags (e.g., `.en.srt`, `.spa.srt`).
-- **No Donation Reminders**: Removed donation prompts and review reminders.
-- **Clean Builds**: Built with Gradle and automated with GitHub Actions CI.
+## Getting the Flatpak
 
-## Building and Running
-
-### Prerequisites
-- JDK 21 or newer
-
-### Build with Gradle
-To compile, run tests, and package the standalone executable JAR:
+### Download from Releases
+Grab the latest pre-built `.flatpak` bundle directly from the [GitHub Releases](https://github.com/d03j/filebot/releases) page and install it locally:
 
 ```bash
-./gradlew build
+flatpak install --user io.github.d03j.filebot-j21.flatpak
 ```
 
-To build only the fat JAR:
-```bash
-./gradlew jar
-```
+## Credits & License
 
-The compiled standalone JAR will be located at:
-```bash
-build/libs/filebot.jar
-```
-
-*(In GitHub Actions, you can download `filebot.jar` directly from the workflow run's "Artifacts" section).*
-
-### Running FileBot
-
-```bash
-java -jar build/libs/filebot.jar
-```
-
-#### Running over SSH (X11 / Wayland Forwarding)
-When running remotely over SSH (`ssh -X` or `ssh -Y`) from a Wayland client (e.g. Sway, Hyprland, GNOME Wayland) into a remote host (even one running Wayland):
-- X11 forwarding runs seamlessly via the client's XWayland server.
-- FileBot automatically sets `_JAVA_AWT_WM_NONREPARENTING=1`, `GDK_BACKEND=x11`, and safe software 2D pipeline rendering properties (`sun.java2d.xrender=false`, `sun.java2d.opengl=false`, `prism.order=sw`) on startup.
-- You can connect and launch the application directly:
-```bash
-# On your Wayland client:
-ssh -X user@remote-host
-
-# On the remote host:
-java -jar build/libs/filebot.jar
-```
-*(If using the launcher script `build/libs/filebot.sh` or `flatpak/filebot.sh`, these settings are also pre-configured in the wrapper shell environment).*
-
-Or run via CLI:
-```bash
-java -jar build/libs/filebot.jar -rename /path/to/media --db TheMovieDB -non-strict
-```
-
-## Flatpak Packaging
-
-A complete Flatpak packaging manifest and assets are provided in the `flatpak/` directory.
-
-### Building the Flatpak
-
-Ensure `flatpak-builder` is installed, and the required runtime and SDK are available:
-
-```bash
-# Install the Freedesktop runtime and SDK with Java 21
-flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.freedesktop.Sdk.Extension.openjdk21//23.08
-
-# First build the JAR
-./gradlew jar
-
-# Build and install the Flatpak locally
-flatpak-builder --user --install --force-clean build-flatpak flatpak/net.filebot.FileBot.json
-
-# Or create a single-bundle Flatpak package file
-flatpak-builder --repo=repo --force-clean build-flatpak flatpak/net.filebot.FileBot.json
-flatpak build-bundle repo net.filebot.FileBot.flatpak net.filebot.FileBot
-```
-
-### Running the Flatpak
-
-```bash
-flatpak run net.filebot.FileBot
-```
-
-## License
-
-This project is licensed under the terms of the GNU General Public License (GPL) version 2 or later. See the [LICENSE](LICENSE) file for details.
+- **Original Project**: FileBot by [rednoah](https://www.filebot.net/).
+- **License**: Licensed under the terms of the GNU General Public License (GPL) version 2 or later. See the [LICENSE](LICENSE) file for details.
