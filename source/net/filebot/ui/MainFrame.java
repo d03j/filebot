@@ -56,7 +56,7 @@ public class MainFrame extends JFrame {
 	private HeaderPanel headerPanel;
 
 	public MainFrame(PanelBuilder[] panels) {
-		super(isInstalled() ? getApplicationName() : String.format("%s %s", getApplicationName(), getApplicationVersion()));
+		super(getApplicationName());
 
 		selectionList = new PanelSelectionList(panels);
 		headerPanel = new HeaderPanel();

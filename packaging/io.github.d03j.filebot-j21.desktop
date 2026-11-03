@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=FileBot
+Name=filebot-j21
 Comment=Rename Movies or TV Shows and download Subtitles
 Type=Application
 Exec=filebot %F
