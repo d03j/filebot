@@ -1,0 +1,68 @@
+{
+  "app-id": "net.filebot.FileBot",
+  "runtime": "org.freedesktop.Platform",
+  "runtime-version": "23.08",
+  "sdk": "org.freedesktop.Sdk",
+  "sdk-extensions": ["org.freedesktop.Sdk.Extension.openjdk21"],
+  "command": "filebot",
+  "finish-args": [
+    "--share=ipc",
+    "--socket=x11",
+    "--socket=wayland",
+    "--socket=fallback-x11",
+    "--share=network",
+    "--filesystem=host",
+    "--filesystem=home",
+    "--env=APP_DATA=~/.filebot",
+    "--env=_JAVA_AWT_WM_NONREPARENTING=1",
+    "--env=GDK_BACKEND=x11",
+    "--env=PATH=/app/bin:/app/jre/bin:/usr/bin"
+  ],
+  "modules": [
+    {
+      "name": "openjdk",
+      "buildsystem": "simple",
+      "build-commands": [
+        "/usr/lib/sdk/openjdk21/install.sh"
+      ]
+    },
+    {
+      "name": "filebot",
+      "buildsystem": "simple",
+      "build-commands": [
+        "install -Dm755 filebot.sh /app/bin/filebot",
+        "install -Dm644 filebot.jar /app/lib/filebot.jar",
+        "install -Dm644 net.filebot.FileBot.desktop /app/share/applications/net.filebot.FileBot.desktop",
+        "install -Dm644 net.filebot.FileBot.metainfo.xml /app/share/metainfo/net.filebot.FileBot.metainfo.xml",
+        "install -Dm644 net.filebot.FileBot.svg /app/share/icons/hicolor/scalable/apps/net.filebot.FileBot.svg",
+        "install -Dm644 net.filebot.FileBot.png /app/share/icons/hicolor/128x128/apps/net.filebot.FileBot.png"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "path": "filebot.sh"
+        },
+        {
+          "type": "file",
+          "path": "../build/libs/filebot.jar"
+        },
+        {
+          "type": "file",
+          "path": "net.filebot.FileBot.desktop"
+        },
+        {
+          "type": "file",
+          "path": "net.filebot.FileBot.metainfo.xml"
+        },
+        {
+          "type": "file",
+          "path": "net.filebot.FileBot.svg"
+        },
+        {
+          "type": "file",
+          "path": "net.filebot.FileBot.png"
+        }
+      ]
+    }
+  ]
+}

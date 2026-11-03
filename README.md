@@ -11,9 +11,10 @@ This repository is a modern fork/refactor of FileBot 4.7.9 updated to run on **J
 - **TV & Movie Metadata**: Automated media renaming with default episode lookup powered by **TheMovieDB** (and AniDB for anime).
 - **Subtitles**: Subtitle matching and downloading using OpenSubtitles with complete support for language tags (e.g., `.en.srt`, `.spa.srt`).
 - **No Donation Reminders**: Removed donation prompts and review reminders.
-- **Clean Builds**: Built with Gradle and automated with GitHub Actions CI.
+- **Clean Builds & Flatpak Deployment**: Built with Gradle and deployable via Flatpak or standalone JAR.
+- **Multi-user Data Isolation**: Dedicated application directory configured at `$HOME/.filebot` (`APP_DATA="$HOME/.filebot"`).
 
-## Building and Running
+## Building and Packaging
 
 ### Prerequisites
 - JDK 21 or newer
@@ -25,31 +26,43 @@ To compile, run tests, and package the standalone executable JAR:
 ./gradlew build
 ```
 
-To build only the fat JAR:
-```bash
-./gradlew jar
-```
-
 The compiled standalone JAR will be located at:
 ```bash
 build/libs/filebot.jar
 ```
 
-*(In GitHub Actions, you can download `filebot.jar` directly from the workflow run's "Artifacts" section).*
+*(In GitHub Actions, you can download `filebot-packages` directly from the workflow run's "Artifacts" section).*
 
 ### Running FileBot
 
+#### Standalone JAR
 ```bash
 java -jar build/libs/filebot.jar
 ```
 
 #### Running over SSH (X11 / Wayland Forwarding)
-When running remotely over SSH (`ssh -X` or `ssh -Y`) into or from a Wayland desktop (such as GNOME Wayland, Sway, or Hyprland), non-reparenting window managers require `_JAVA_AWT_WM_NONREPARENTING=1` to be set in your shell environment prior to launching Java, along with disabling XRender acceleration to prevent blank windows:
+When running remotely over SSH (`ssh -X` or `ssh -Y`) from a Wayland client (e.g. Sway, Hyprland, GNOME Wayland) into a remote host (even one running Wayland):
+- X11 forwarding runs seamlessly via the client's XWayland server.
+- FileBot automatically sets `_JAVA_AWT_WM_NONREPARENTING=1`, `GDK_BACKEND=x11`, and safe software 2D pipeline rendering properties (`sun.java2d.xrender=false`, `sun.java2d.opengl=false`, `prism.order=sw`) on startup.
+- You can connect and launch the application directly:
 ```bash
-export _JAVA_AWT_WM_NONREPARENTING=1
-java -Dsun.java2d.xrender=false -Dsun.java2d.opengl=false -jar build/libs/filebot.jar
+# On your Wayland client:
+ssh -X user@remote-host
+
+# On the remote host:
+java -jar build/libs/filebot.jar
 ```
-*(If using the provided launcher scripts like `installer/portable/filebot.sh`, this is configured automatically).*
+
+#### Building and Installing Flatpak
+To build the Flatpak bundle:
+```bash
+cd flatpak
+flatpak-builder --user --install --force-clean build-dir net.filebot.FileBot.json
+```
+Run the Flatpak:
+```bash
+flatpak run net.filebot.FileBot
+```
 
 Or run via CLI:
 ```bash

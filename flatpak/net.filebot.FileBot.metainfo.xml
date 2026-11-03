@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>net.filebot.FileBot</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>FileBot</name>
+  <summary>The ultimate TV and Movie renamer</summary>
+  <description>
+    <p>FileBot is the ultimate tool for organizing and renaming your movies, TV shows, and anime, as well as downloading subtitles.</p>
+  </description>
+  <launchable type="desktop-id">net.filebot.FileBot.desktop</launchable>
+  <provides>
+    <binary>filebot</binary>
+  </provides>
+</component>

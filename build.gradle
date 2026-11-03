@@ -44,7 +44,7 @@ dependencies {
     // Local custom JARs in lib/jars
     implementation fileTree(dir: 'lib/jars', include: ['*.jar'])
 
-    // Dependencies from ivy.xml
+    // Dependencies
     implementation 'org.codehaus.groovy:groovy-all:2.4.21'
     implementation 'net.java.dev.jna:jna:4.2.2'
     implementation 'net.java.dev.jna:jna-platform:4.2.2'

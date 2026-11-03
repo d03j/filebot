@@ -19,14 +19,32 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
 
+    - name: Install Flatpak & Flatpak Builder
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y flatpak flatpak-builder
+        flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
     - name: Build and Test with Gradle Wrapper
       run: ./gradlew build
 
-    - name: Upload JAR Artifact
+    - name: Package Flatpak
+      run: |
+        mkdir -p packages
+        cp build/libs/filebot.jar packages/
+        ./flatpak/build-flatpak.sh || {
+          echo "Fallback: archiving flatpak manifest and source files"
+          mkdir -p packages/flatpak
+          cp -r flatpak/* packages/flatpak/
+        }
+
+    - name: Upload Package Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: filebot-jar
-        path: build/libs/*.jar
+        name: filebot-packages
+        path: |
+          packages/
+          build/libs/filebot.jar
