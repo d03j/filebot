@@ -55,11 +55,40 @@ ssh -X user@remote-host
 # On the remote host:
 java -jar build/libs/filebot.jar
 ```
-*(If using the provided launcher scripts like `installer/portable/filebot.sh`, these settings are also pre-configured in the wrapper shell environment).*
+*(If using the launcher script `build/libs/filebot.sh` or `flatpak/filebot.sh`, these settings are also pre-configured in the wrapper shell environment).*
 
 Or run via CLI:
 ```bash
 java -jar build/libs/filebot.jar -rename /path/to/media --db TheMovieDB -non-strict
+```
+
+## Flatpak Packaging
+
+A complete Flatpak packaging manifest and assets are provided in the `flatpak/` directory.
+
+### Building the Flatpak
+
+Ensure `flatpak-builder` is installed, and the required runtime and SDK are available:
+
+```bash
+# Install the Freedesktop runtime and SDK with Java 21
+flatpak install flathub org.freedesktop.Platform//23.08 org.freedesktop.Sdk//23.08 org.freedesktop.Sdk.Extension.openjdk21//23.08
+
+# First build the JAR
+./gradlew jar
+
+# Build and install the Flatpak locally
+flatpak-builder --user --install --force-clean build-flatpak flatpak/net.filebot.FileBot.json
+
+# Or create a single-bundle Flatpak package file
+flatpak-builder --repo=repo --force-clean build-flatpak flatpak/net.filebot.FileBot.json
+flatpak build-bundle repo net.filebot.FileBot.flatpak net.filebot.FileBot
+```
+
+### Running the Flatpak
+
+```bash
+flatpak run net.filebot.FileBot
 ```
 
 ## License

@@ -114,7 +114,7 @@ jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     doLast {
         project.copy {
-            from 'installer/portable/filebot.sh'
+            from 'flatpak/filebot.sh'
             into 'build/libs'
             filePermissions {
                 user {
