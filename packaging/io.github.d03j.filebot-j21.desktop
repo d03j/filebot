@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=FileBot
+Comment=Rename Movies or TV Shows and download Subtitles
+Type=Application
+Exec=filebot %F
+Icon=io.github.d03j.filebot-j21
+Terminal=false
+StartupNotify=true
+Categories=AudioVideo;Video;FileTools;Java;
+MimeType=video/x-matroska;video/mp4;video/x-msvideo;video/quicktime;
