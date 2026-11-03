@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.d03j.filebot-j21</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>FileBot</name>
+  <summary>The ultimate tool for organizing and renaming your movies, TV shows, and anime</summary>
+  <description>
+    <p>
+      FileBot is the ultimate tool for organizing and renaming your Movies, TV Shows, and Anime, as well as fetching subtitles and artwork.
+      It makes organizing your media files a breeze! FileBot matches your files against online databases such as TheMovieDB and AniDB.
+    </p>
+    <p>
+      Features:
+    </p>
+    <ul>
+      <li>A simple user-interface tuned for drag-and-drop</li>
+      <li>Rename hundreds of media files in matter of seconds</li>
+      <li>Fetch episode lists from TheMovieDB and AniDB</li>
+      <li>Download subtitles from OpenSubtitles</li>
+      <li>Powerful and full-featured format expression engine</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.d03j.filebot-j21.desktop</launchable>
+  <url type="homepage">https://github.com/d03j/filebot</url>
+  <provides>
+    <binary>filebot</binary>
+  </provides>
+  <developer_name>FileBot Contributors</developer_name>
+</component>

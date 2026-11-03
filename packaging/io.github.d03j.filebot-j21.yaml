@@ -1,0 +1,51 @@
+app-id: io.github.d03j.filebot-j21
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk21
+command: filebot
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+  - --share=network
+  - --filesystem=host
+  - --filesystem=home
+  - --device=dri
+  - --env=PATH=/app/bin:/app/jdk/bin:/usr/bin
+modules:
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk21/install.sh
+
+  - name: filebot
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+    build-commands:
+      - install -Dm755 flatpak/filebot.sh /app/bin/filebot
+      - |
+        if [ ! -f build/libs/filebot.jar ]; then
+          export JAVA_HOME=/app/jdk
+          export PATH=/app/jdk/bin:$PATH
+          ./gradlew jar --no-daemon || true
+        fi
+      - |
+        if [ -f build/libs/filebot.jar ]; then
+          install -Dm644 build/libs/filebot.jar /app/share/filebot/filebot.jar
+        fi
+      - install -Dm644 packaging/io.github.d03j.filebot-j21.desktop /app/share/applications/io.github.d03j.filebot-j21.desktop
+      - install -Dm644 packaging/io.github.d03j.filebot-j21.metainfo.xml /app/share/metainfo/io.github.d03j.filebot-j21.metainfo.xml
+      - install -Dm644 flatpak/icons/net.filebot.FileBot.svg /app/share/icons/hicolor/scalable/apps/io.github.d03j.filebot-j21.svg
+      - install -Dm644 flatpak/icons/net.filebot.FileBot.svg /app/share/icons/hicolor/scalable/apps/net.filebot.FileBot.svg
+      - |
+        for size in 16 24 32 48 64 72 128 256 512; do
+          install -Dm644 flatpak/icons/net.filebot.FileBot_${size}x${size}.png /app/share/icons/hicolor/${size}x${size}/apps/io.github.d03j.filebot-j21.png
+          install -Dm644 flatpak/icons/net.filebot.FileBot_${size}x${size}.png /app/share/icons/hicolor/${size}x${size}/apps/net.filebot.FileBot.png
+        done
+    sources:
+      - type: dir
+        path: ..
