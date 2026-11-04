@@ -8,7 +8,16 @@ import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import java.util.Locale;
+
 import org.junit.Test;
+
+import net.filebot.WebServices;
+import net.filebot.web.Episode;
+import net.filebot.web.Movie;
+import net.filebot.web.SeriesInfo;
+import net.filebot.web.SimpleDate;
+import net.filebot.web.SortOrder;
 
 public class ExpressionFormatTest {
 
@@ -104,6 +113,42 @@ public class ExpressionFormatTest {
 
 		// check message
 		assertEquals("Binding \"xyz\": undefined", format.caughtScriptException().getMessage());
+	}
+
+	@Test
+	public void episodeBindings() throws Exception {
+		SeriesInfo tmdbSeries = new SeriesInfo(WebServices.TheMovieDB_TV, SortOrder.Airdate, Locale.ENGLISH, 76662);
+		tmdbSeries.setName("Shakespeare & Hathaway: Private Investigators");
+		tmdbSeries.setStartDate(new SimpleDate(2018, 2, 26));
+
+		Episode episode = new Episode("Shakespeare & Hathaway: Private Investigators", 6, 3, "Nothing Else Holds Fashion", null, null, null, tmdbSeries);
+
+		MediaBindingBean bean = new MediaBindingBean(episode, null);
+		ExpressionFormat format = new ExpressionFormat("{n.space('.')}.-.[tmdbid-{id}]");
+		assertEquals("Shakespeare.&.Hathaway.Private.Investigators.-.[tmdbid-76662]", format.format(bean));
+
+		ExpressionFormat formatTmdbId = new ExpressionFormat("[tmdbid-{tmdbid}]");
+		assertEquals("[tmdbid-76662]", formatTmdbId.format(bean));
+
+		SeriesInfo tvmazeSeries = new SeriesInfo(WebServices.TVmaze, SortOrder.Airdate, Locale.ENGLISH, 34567);
+		tvmazeSeries.setName("Sample Show");
+		Episode tvmazeEpisode = new Episode("Sample Show", 1, 1, "Pilot", null, null, null, tvmazeSeries);
+		MediaBindingBean tvmazeBean = new MediaBindingBean(tvmazeEpisode, null);
+
+		ExpressionFormat formatId = new ExpressionFormat("{n}.[id-{id}]");
+		assertEquals("Sample Show.[id-34567]", formatId.format(tvmazeBean));
+	}
+
+	@Test
+	public void movieBindings() throws Exception {
+		Movie movie = new Movie("The Homesman", 2014, -1, 264656);
+		MediaBindingBean bean = new MediaBindingBean(movie, null);
+
+		ExpressionFormat formatId = new ExpressionFormat("{n}.({y}).[tmdbid-{id}]");
+		assertEquals("The Homesman.(2014).[tmdbid-264656]", formatId.format(bean));
+
+		ExpressionFormat formatTmdbId = new ExpressionFormat("{n}.({y}).[tmdbid-{tmdbid}]");
+		assertEquals("The Homesman.(2014).[tmdbid-264656]", formatTmdbId.format(bean));
 	}
 
 	protected static class TestScriptFormat extends ExpressionFormat {
