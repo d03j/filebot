@@ -9,22 +9,32 @@ This is a modern fork and refactor of FileBot 4.7.9 (originally created by redno
 - **TheTVDB Removed**: Stripped out TheTVDB integration in favor of TheMovieDB (TMDB), aligning natively with Jellyfin metadata workflows.
 - **No Reminders**: Removed upstream donation prompts and review popups.
 
+## Releases & Packages
+
+Pre-built binaries (`filebot.jar` and `filebot.sh`) are available under the [GitHub Releases](https://github.com/d03j/filebot/releases) page and GitHub Actions package artifacts (`filebot-package`).
+
 ## Building & Running
 
 ### Requirements
 - Java 21 JDK (e.g. Eclipse Temurin 21)
 
 ### Build
-Build the standalone executable JAR using Gradle:
+Build the standalone executable JAR and launch script using Gradle:
 
 ```bash
-./gradlew jar
+./gradlew build
 ```
 
-The resulting JAR file will be located at `build/libs/filebot.jar`.
+The resulting files will be located at `build/libs/filebot.jar` and `build/libs/filebot.sh`.
 
 ### Run
-Launch FileBot:
+Launch FileBot using the launcher script:
+
+```bash
+./build/libs/filebot.sh
+```
+
+Or run directly with Java:
 
 ```bash
 java -jar build/libs/filebot.jar
