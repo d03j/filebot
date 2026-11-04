@@ -97,7 +97,7 @@ public class TMDbTVClient extends AbstractEpisodeListProvider {
 	@Override
 	protected SeriesData fetchSeriesData(SearchResult series, SortOrder sortOrder, Locale locale) throws Exception {
 		// http://api.themoviedb.org/3/tv/id
-		Object tv = tmdb.request("tv/" + series.getId(), emptyMap(), locale, REQUEST_LIMIT);
+		Object tv = tmdb.request("tv/" + series.getId(), singletonMap("append_to_response", "content_ratings,external_ids,credits"), locale, REQUEST_LIMIT);
 
 		SeriesInfo info = new SeriesInfo(this, sortOrder, locale, series.getId());
 		info.setName(Stream.of("original_name", "name").map(key -> getString(tv, key)).filter(Objects::nonNull).findFirst().orElse(series.getName()));
@@ -108,8 +108,42 @@ public class TMDbTVClient extends AbstractEpisodeListProvider {
 		info.setRating(getStringValue(tv, "vote_average", Double::new));
 		info.setRatingCount(getStringValue(tv, "vote_count", Integer::new));
 		info.setRuntime(stream(getArray(tv, "episode_run_time")).map(Object::toString).map(Integer::new).findFirst().orElse(null));
+		info.setOverview(getString(tv, "overview"));
 		info.setGenres(streamJsonObjects(tv, "genres").map(it -> getString(it, "name")).collect(toList()));
 		info.setNetwork(streamJsonObjects(tv, "networks").map(it -> getString(it, "name")).findFirst().orElse(null));
+
+		Map<String, String> certifications = new LinkedHashMap<String, String>();
+		try {
+			String countryCode = locale.getCountry().isEmpty() ? "US" : locale.getCountry();
+			streamJsonObjects(getMap(tv, "content_ratings"), "results").forEach(it -> {
+				String certificationCountry = getString(it, "iso_3166_1");
+				String certification = getString(it, "rating");
+
+				if (certification != null && !certification.isEmpty() && certificationCountry != null) {
+					if (countryCode.equals(certificationCountry)) {
+						info.setCertification(certification);
+					}
+					certifications.put(certificationCountry, certification);
+				}
+			});
+		} catch (Exception e) {
+			// ignore content_ratings error
+		}
+		info.setCertifications(certifications);
+
+		try {
+			Map<?, ?> externalIds = getMap(tv, "external_ids");
+			info.setImdbId(getString(externalIds, "imdb_id"));
+		} catch (Exception e) {
+			// ignore external_ids error
+		}
+
+		try {
+			List<String> cast = streamJsonObjects(getMap(tv, "credits"), "cast").map(it -> getString(it, "name")).filter(Objects::nonNull).collect(toList());
+			info.setActors(cast);
+		} catch (Exception e) {
+			// ignore credits error
+		}
 
 		int[] seasons = streamJsonObjects(tv, "seasons").mapToInt(it -> getInteger(it, "season_number")).toArray();
 		List<Episode> episodes = new ArrayList<Episode>();

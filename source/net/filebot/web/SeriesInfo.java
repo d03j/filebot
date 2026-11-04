@@ -4,8 +4,10 @@ import static java.util.Arrays.*;
 import static java.util.Collections.*;
 
 import java.io.Serializable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class SeriesInfo implements Serializable {
 
@@ -20,6 +22,9 @@ public class SeriesInfo implements Serializable {
 	protected String[] aliasNames;
 	protected String[] actors;
 	protected String certification;
+	protected Map<String, String> certifications;
+	protected String imdbId;
+	protected String overview;
 	protected SimpleDate startDate;
 	protected String[] genres;
 	protected String network;
@@ -41,6 +46,9 @@ public class SeriesInfo implements Serializable {
 		this.aliasNames = other.aliasNames == null ? null : other.aliasNames.clone();
 		this.actors = other.actors == null ? null : other.actors.clone();
 		this.certification = other.certification;
+		this.certifications = other.certifications == null ? null : new LinkedHashMap<String, String>(other.certifications);
+		this.imdbId = other.imdbId;
+		this.overview = other.overview;
 		this.startDate = other.startDate == null ? null : other.startDate.clone();
 		this.genres = other.genres == null ? null : other.genres.clone();
 		this.network = other.network;
@@ -125,6 +133,30 @@ public class SeriesInfo implements Serializable {
 
 	public void setCertification(String certification) {
 		this.certification = certification;
+	}
+
+	public Map<String, String> getCertifications() {
+		return certifications == null ? emptyMap() : unmodifiableMap(certifications);
+	}
+
+	public void setCertifications(Map<String, String> certifications) {
+		this.certifications = certifications == null ? null : new LinkedHashMap<String, String>(certifications);
+	}
+
+	public String getImdbId() {
+		return imdbId;
+	}
+
+	public void setImdbId(String imdbId) {
+		this.imdbId = imdbId;
+	}
+
+	public String getOverview() {
+		return overview;
+	}
+
+	public void setOverview(String overview) {
+		this.overview = overview;
 	}
 
 	public SimpleDate getStartDate() {

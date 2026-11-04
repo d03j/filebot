@@ -314,6 +314,18 @@ public class MediaBindingBean {
 	@Define("imdbid")
 	public String getImdbId() throws Exception {
 		if (infoObject instanceof Episode) {
+			SeriesInfo seriesInfo = getSeriesInfo();
+			if (seriesInfo != null && seriesInfo.getImdbId() != null) {
+				String imdbId = seriesInfo.getImdbId();
+				if (!imdbId.startsWith("tt")) {
+					try {
+						imdbId = String.format("tt%07d", Integer.parseInt(imdbId));
+					} catch (NumberFormatException e) {
+						// keep as is
+					}
+				}
+				return imdbId;
+			}
 			return null;
 		}
 
@@ -567,7 +579,7 @@ public class MediaBindingBean {
 
 	@Define("subt")
 	public String getSubtitleTags() throws Exception {
-		if (!SUBTITLE_FILES.accept(getMediaFile())) {
+		if (mediaFile == null || !SUBTITLE_FILES.accept(mediaFile)) {
 			return null;
 		}
 
@@ -578,7 +590,7 @@ public class MediaBindingBean {
 			// language tag not found
 		}
 
-		String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
+		String category = releaseInfo.getSubtitleCategoryTag(FileUtilities.getName(mediaFile), getOriginalFileName(mediaFile));
 
 		if (language != null) {
 			String tag = '.' + language.getISO3B();
@@ -595,15 +607,19 @@ public class MediaBindingBean {
 
 	@Define("lang")
 	public Language getLanguageTag() throws Exception {
-		Locale languageSuffix = releaseInfo.getSubtitleLanguageTag(FileUtilities.getName(getMediaFile()), getOriginalFileName(getMediaFile()));
+		if (mediaFile == null) {
+			return null;
+		}
+
+		Locale languageSuffix = releaseInfo.getSubtitleLanguageTag(FileUtilities.getName(mediaFile), getOriginalFileName(mediaFile));
 		if (languageSuffix != null) {
 			return Language.getLanguage(languageSuffix);
 		}
 
 		// try to auto-detect subtitle language
-		if (SUBTITLE_FILES.accept(getMediaFile())) {
+		if (SUBTITLE_FILES.accept(mediaFile)) {
 			try {
-				return Language.getLanguage(detectSubtitleLanguage(getMediaFile()));
+				return Language.getLanguage(detectSubtitleLanguage(mediaFile));
 			} catch (Throwable e) {
 				throw new RuntimeException("Failed to auto-detect subtitle language: " + e, e);
 			}

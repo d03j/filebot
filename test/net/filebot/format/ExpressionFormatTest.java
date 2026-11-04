@@ -121,6 +121,11 @@ public class ExpressionFormatTest {
 		tmdbSeries.setName("Shakespeare & Hathaway: Private Investigators");
 		tmdbSeries.setStartDate(new SimpleDate(2018, 2, 26));
 
+		tmdbSeries.setCertification("TV-PG");
+		tmdbSeries.setCertifications(java.util.Collections.singletonMap("AU", "PG"));
+		tmdbSeries.setImdbId("tt7526498");
+		tmdbSeries.setActors(java.util.Arrays.asList("Jo Joyner", "Mark Benton"));
+
 		Episode episode = new Episode("Shakespeare & Hathaway: Private Investigators", 6, 3, "Nothing Else Holds Fashion", null, null, null, tmdbSeries);
 
 		MediaBindingBean bean = new MediaBindingBean(episode, null);
@@ -129,6 +134,16 @@ public class ExpressionFormatTest {
 
 		ExpressionFormat formatTmdbId = new ExpressionFormat("[tmdbid-{tmdbid}]");
 		assertEquals("[tmdbid-76662]", formatTmdbId.format(bean));
+
+		// User exact expression: /home/filebot/all_shows/{n.space('.')}.[tmdbid-{id}]/S{s.pad(2)}/{n.space('.')}.-.{s00e00}.-.{t.space('.')}{subt}
+		ExpressionFormat userFormat = new ExpressionFormat("/home/filebot/all_shows/{n.space('.')}.[tmdbid-{id}]/S{s.pad(2)}/{n.space('.')}.-.{s00e00}.-.{t.space('.')}{subt}");
+		assertEquals("/home/filebot/all_shows/Shakespeare.&.Hathaway.Private.Investigators.[tmdbid-76662]/S06/Shakespeare.&.Hathaway.Private.Investigators.-.S06E03.-.Nothing.Else.Holds.Fashion", userFormat.format(bean));
+
+		// Extended metadata: certifications, certification, imdbid, actors
+		assertEquals("PG", new ExpressionFormat("{info.certifications.AU}").format(bean));
+		assertEquals("TV-PG", new ExpressionFormat("{certification}").format(bean));
+		assertEquals("tt7526498", new ExpressionFormat("{imdbid}").format(bean));
+		assertEquals("Jo Joyner", new ExpressionFormat("{actors[0]}").format(bean));
 
 		SeriesInfo tvmazeSeries = new SeriesInfo(WebServices.TVmaze, SortOrder.Airdate, Locale.ENGLISH, 34567);
 		tvmazeSeries.setName("Sample Show");
