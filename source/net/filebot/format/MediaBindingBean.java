@@ -253,44 +253,90 @@ public class MediaBindingBean {
 		return null;
 	}
 
-	@Define("tmdbid")
-	public String getTmdbId() throws Exception {
-		int tmdbid = getMovie().getTmdbId();
-
-		if (tmdbid <= 0) {
-			if (getMovie().getImdbId() <= 0) {
-				return null;
+	@Define("id")
+	public String getId() throws Exception {
+		if (infoObject instanceof Episode) {
+			SeriesInfo seriesInfo = getSeriesInfo();
+			if (seriesInfo != null) {
+				Integer id = seriesInfo.getId();
+				return id != null ? String.valueOf(id) : null;
 			}
-
-			// lookup IMDbID for TMDbID
-			try {
-				tmdbid = WebServices.TheMovieDB.getMovieInfo(getMovie(), Locale.ENGLISH, false).getId();
-			} catch (FileNotFoundException e) {
-				return null;
-			}
+			return null;
 		}
 
-		return String.valueOf(tmdbid);
+		if (infoObject instanceof Movie) {
+			int id = getMovie().getId();
+			if (id > 0) {
+				return String.valueOf(id);
+			}
+			return getTmdbId();
+		}
+
+		return null;
+	}
+
+	@Define("tmdbid")
+	public String getTmdbId() throws Exception {
+		if (infoObject instanceof Episode) {
+			SeriesInfo seriesInfo = getSeriesInfo();
+			if (seriesInfo != null) {
+				String db = seriesInfo.getDatabase();
+				if (db != null && (db.startsWith("TheMovieDB") || db.equalsIgnoreCase("tmdb"))) {
+					Integer id = seriesInfo.getId();
+					return id != null ? String.valueOf(id) : null;
+				}
+			}
+			return null;
+		}
+
+		if (infoObject instanceof Movie) {
+			int tmdbid = getMovie().getTmdbId();
+
+			if (tmdbid <= 0) {
+				if (getMovie().getImdbId() <= 0) {
+					return null;
+				}
+
+				// lookup IMDbID for TMDbID
+				try {
+					tmdbid = WebServices.TheMovieDB.getMovieInfo(getMovie(), Locale.ENGLISH, false).getId();
+				} catch (FileNotFoundException e) {
+					return null;
+				}
+			}
+
+			return String.valueOf(tmdbid);
+		}
+
+		return null;
 	}
 
 	@Define("imdbid")
 	public String getImdbId() throws Exception {
-		Integer imdbid = getMovie().getImdbId();
-
-		if (imdbid <= 0) {
-			if (getMovie().getTmdbId() <= 0) {
-				return null;
-			}
-
-			// lookup IMDbID for TMDbID
-			try {
-				imdbid = WebServices.TheMovieDB.getMovieInfo(getMovie(), Locale.ENGLISH, false).getImdbId();
-			} catch (FileNotFoundException e) {
-				return null;
-			}
+		if (infoObject instanceof Episode) {
+			return null;
 		}
 
-		return imdbid != null ? String.format("tt%07d", imdbid) : null;
+		if (infoObject instanceof Movie) {
+			Integer imdbid = getMovie().getImdbId();
+
+			if (imdbid <= 0) {
+				if (getMovie().getTmdbId() <= 0) {
+					return null;
+				}
+
+				// lookup IMDbID for TMDbID
+				try {
+					imdbid = WebServices.TheMovieDB.getMovieInfo(getMovie(), Locale.ENGLISH, false).getImdbId();
+				} catch (FileNotFoundException e) {
+					return null;
+				}
+			}
+
+			return imdbid != null ? String.format("tt%07d", imdbid) : null;
+		}
+
+		return null;
 	}
 
 	@Define("vc")
