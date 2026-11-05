@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class SeriesInfo implements Serializable {
 
+	private static final long serialVersionUID = -4832056448485510473L;
+
 	// request parameters
 	protected String database;
 	protected String order;

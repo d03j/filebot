@@ -55,6 +55,7 @@ public class Cache {
 			return getElementValue(cache.get(key));
 		} catch (Exception e) {
 			debug.warning(format("Cache get: %s => %s", key, e));
+			remove(key);
 		}
 		return null;
 	}
@@ -69,6 +70,7 @@ public class Cache {
 			}
 		} catch (Exception e) {
 			debug.warning(format("Cache computeIf: %s => %s", key, e));
+			remove(key);
 		}
 
 		// compute if absent
@@ -86,6 +88,12 @@ public class Cache {
 			cache.put(createElement(key, value));
 		} catch (Exception e) {
 			debug.warning(format("Cache put: %s => %s", key, e));
+			try {
+				cache.remove(key);
+				cache.put(createElement(key, value));
+			} catch (Exception retryException) {
+				debug.warning(format("Cache retry put: %s => %s", key, retryException));
+			}
 		}
 	}
 
