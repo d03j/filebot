@@ -62,6 +62,7 @@ else
 fi
 
 exec "$JAVA" \
+	--enable-native-access=ALL-UNNAMED \
 	-Dunixfs=false \
 	-DuseGVFS=false \
 	-DuseExtendedFileAttributes=true \
