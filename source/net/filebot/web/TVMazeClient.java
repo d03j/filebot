@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.swing.Icon;
@@ -77,6 +78,14 @@ public class TVMazeClient extends AbstractEpisodeListProvider {
 		seriesInfo.setStartDate(premiered);
 		seriesInfo.setRating(rating);
 		seriesInfo.setGenres(stream(genres).map(Objects::toString).collect(toList()));
+		seriesInfo.setOverview(getString(response, "summary"));
+
+		try {
+			Map<?, ?> externals = getMap(response, "externals");
+			seriesInfo.setImdbId(getString(externals, "imdb"));
+		} catch (Exception e) {
+			// ignore externals error
+		}
 
 		return seriesInfo;
 	}
