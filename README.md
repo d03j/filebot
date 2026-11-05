@@ -9,6 +9,10 @@ This is a modern fork and refactor of FileBot 4.7.9 (originally created by redno
 - **TheTVDB Removed**: Stripped out TheTVDB integration in favor of TheMovieDB (TMDB), aligning natively with Jellyfin metadata workflows.
 - **No Reminders**: Removed upstream donation prompts and review popups.
 
+## Disclaimer & Scope
+
+This fork is offered **as is**, without any warranties or guarantees of any kind. It has only been tested against specific personal workflows—specifically the graphical user interface (GUI) media renaming functionality. Other features, command-line automation scripts, subtitle downloaders, and advanced modules have not been validated. Use at your own risk.
+
 ## Releases & Packages
 
 Pre-built binaries (`filebot.jar` and `filebot.sh`) are available under the [GitHub Releases](https://github.com/d03j/filebot/releases) page and GitHub Actions package artifacts (`filebot-package`).
