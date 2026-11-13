@@ -201,7 +201,47 @@ class RenameAction extends AbstractAction {
 		}
 	}
 
-	private Map<File, File> checkRenamePlan(List<Entry<File, File>> renamePlan, Window parent) throws IOException {
+	protected String showFatalIssuesDialog(Window parent, List<String> issues) {
+		String text = "These files will be ignored. Do you want to continue?";
+		JList issuesComponent = new JList(issues.toArray()) {
+
+			@Override
+			public Dimension getPreferredScrollableViewportSize() {
+				// adjust component size
+				return new Dimension(80, 80);
+			}
+		};
+		Object[] message = new Object[] { text, new JScrollPane(issuesComponent) };
+		String[] actions = new String[] { "Continue", "Cancel" };
+		JOptionPane pane = new JOptionPane(message, PLAIN_MESSAGE, YES_NO_OPTION, null, actions, actions[1]);
+
+		// display option dialog
+		pane.createDialog(getWindow(parent), "Conflicting Files").setVisible(true);
+
+		return pane.getValue() != null ? pane.getValue().toString() : actions[1];
+	}
+
+	protected String showOverwriteDialog(Window parent, List<String> issues, boolean canSkip) {
+		String text = "The following files already exist. Do you want to overwrite?";
+		JList issuesComponent = new JList(issues.toArray()) {
+
+			@Override
+			public Dimension getPreferredScrollableViewportSize() {
+				// adjust component size
+				return new Dimension(80, 80);
+			}
+		};
+		Object[] message = new Object[] { text, new JScrollPane(issuesComponent) };
+		String[] actions = canSkip ? new String[] { "Overwrite", "Skip", "Cancel" } : new String[] { "Overwrite", "Cancel" };
+		JOptionPane pane = new JOptionPane(message, PLAIN_MESSAGE, YES_NO_CANCEL_OPTION, null, actions, actions[actions.length - 1]);
+
+		// display option dialog
+		pane.createDialog(getWindow(parent), "Conflicting Files").setVisible(true);
+
+		return pane.getValue() != null ? pane.getValue().toString() : "Cancel";
+	}
+
+	protected Map<File, File> checkRenamePlan(List<Entry<File, File>> renamePlan, Window parent) throws IOException {
 		// ask for user permissions to output paths
 		if (isMacSandbox()) {
 			if (!MacAppUtilities.askUnlockFolders(parent, renamePlan.stream().flatMap(e -> Stream.of(e.getKey(), resolve(e.getKey(), e.getValue()))).map(f -> new File(f.getAbsolutePath())).collect(Collectors.toList()))) {
@@ -210,53 +250,57 @@ class RenameAction extends AbstractAction {
 		}
 
 		// build rename map and perform some sanity checks
-		Map<File, File> renameMap = new HashMap<File, File>();
+		Map<File, File> renameMap = new LinkedHashMap<File, File>();
 		Set<File> destinationSet = new HashSet<File>();
-		List<String> issues = new ArrayList<String>();
+		List<String> fatalIssues = new ArrayList<String>();
+		List<Entry<File, File>> existingFiles = new ArrayList<Entry<File, File>>();
+		List<String> existingFileIssues = new ArrayList<String>();
 
 		for (Entry<File, File> mapping : renamePlan) {
 			File source = mapping.getKey();
 			File destination = resolve(source, mapping.getValue());
 
-			try {
-				if (renameMap.containsKey(source))
-					throw new IllegalArgumentException("Duplicate source file: " + source.getPath());
+			if (renameMap.containsKey(source)) {
+				fatalIssues.add("Duplicate source file: " + source.getPath());
+				continue;
+			}
 
-				if (destinationSet.contains(destination))
-					throw new IllegalArgumentException("Conflict detected: " + mapping.getValue().getPath());
+			if (destinationSet.contains(destination)) {
+				fatalIssues.add("Conflict detected: " + mapping.getValue().getPath());
+				continue;
+			}
 
-				if (destination.exists() && !resolve(mapping.getKey(), mapping.getValue()).equals(mapping.getKey()))
-					throw new IllegalArgumentException("File already exists: " + mapping.getValue().getPath());
+			if (getExtension(destination) == null && destination.isFile()) {
+				fatalIssues.add("Missing extension: " + mapping.getValue().getPath());
+				continue;
+			}
 
-				if (getExtension(destination) == null && destination.isFile())
-					throw new IllegalArgumentException("Missing extension: " + mapping.getValue().getPath());
+			destinationSet.add(destination);
 
-				// use original mapping values
+			if (destination.exists() && !destination.equals(source)) {
+				existingFiles.add(mapping);
+				existingFileIssues.add("File already exists: " + mapping.getValue().getPath());
+			} else {
 				renameMap.put(mapping.getKey(), mapping.getValue());
-				destinationSet.add(destination);
-			} catch (Exception e) {
-				issues.add(e.getMessage());
 			}
 		}
 
-		if (issues.size() > 0) {
-			String text = "These files will be ignored. Do you want to continue?";
-			JList issuesComponent = new JList(issues.toArray()) {
+		if (fatalIssues.size() > 0) {
+			String action = showFatalIssuesDialog(parent, fatalIssues);
+			if (!"Continue".equals(action)) {
+				return emptyMap();
+			}
+		}
 
-				@Override
-				public Dimension getPreferredScrollableViewportSize() {
-					// adjust component size
-					return new Dimension(80, 80);
+		if (existingFiles.size() > 0) {
+			String action = showOverwriteDialog(parent, existingFileIssues, !renameMap.isEmpty());
+			if ("Overwrite".equals(action)) {
+				for (Entry<File, File> mapping : existingFiles) {
+					renameMap.put(mapping.getKey(), mapping.getValue());
 				}
-			};
-			Object[] message = new Object[] { text, new JScrollPane(issuesComponent) };
-			String[] actions = new String[] { "Continue", "Cancel" };
-			JOptionPane pane = new JOptionPane(message, PLAIN_MESSAGE, YES_NO_OPTION, null, actions, actions[1]);
-
-			// display option dialog
-			pane.createDialog(getWindow(parent), "Conflicting Files").setVisible(true);
-
-			if (pane.getValue() != actions[0]) {
+			} else if ("Skip".equals(action)) {
+				// skip existing files and continue with remaining renameMap
+			} else {
 				return emptyMap();
 			}
 		}
@@ -365,6 +409,11 @@ class RenameAction extends AbstractAction {
 					File destination = resolve(mapping.getKey(), mapping.getValue());
 					boolean isSameFile = source.equals(destination);
 					if (!isSameFile || (isSameFile && !source.getName().equals(destination.getName()))) {
+						if (!isSameFile && destination.isFile()) {
+							if (!destination.delete()) {
+								log.log(Level.WARNING, "Failed to delete existing file: " + destination);
+							}
+						}
 						action.rename(source, destination);
 					}
 
@@ -432,6 +481,9 @@ class RenameAction extends AbstractAction {
 				File source = mapping.getKey();
 				File destination = resolve(mapping.getKey(), mapping.getValue());
 				if (!source.equals(destination)) {
+					if (destination.isFile()) {
+						destination.delete();
+					}
 					todo.put(source, destination);
 				}
 			}
