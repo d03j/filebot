@@ -1,4 +1,5 @@
 lib/ivy/
 build/
+bin/
 classpath.txt
 .gradle/
