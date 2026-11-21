@@ -273,7 +273,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 	@Override
 	public List<Artwork> getArtwork(int id, String category, Locale locale) throws Exception {
 		Object config = request("configuration", emptyMap(), Locale.ROOT, REQUEST_LIMIT);
-		URL baseUrl = new URL(getString(getMap(config, "images"), "secure_base_url"));
+		URL baseUrl = URI.create(getString(getMap(config, "images"), "secure_base_url")).toURL();
 
 		Object images = request("movie/" + id + "/images", emptyMap(), Locale.ROOT, REQUEST_LIMIT);
 
@@ -282,9 +282,9 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 				String path = "original" + getString(it, "file_path");
 				String width = getString(it, "width");
 				String height = getString(it, "height");
-				Locale language = getStringValue(it, "iso_639_1", Locale::new);
+				Locale language = getStringValue(it, "iso_639_1", Locale::of);
 
-				return new Artwork(this, Stream.of(category, String.join("x", width, height)), new URL(baseUrl, path), language, null);
+				return new Artwork(this, Stream.of(category, String.join("x", width, height)), baseUrl.toURI().resolve(path).toURL(), language, null);
 			} catch (Exception e) {
 				debug.log(Level.WARNING, e, e::getMessage);
 				return null;
@@ -320,7 +320,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 		}
 		file.append("api_key=").append(apikey);
 
-		return new URL("https", host, file.toString());
+		return new URI("https", host, file.toString(), null).toURL();
 	}
 
 	protected String getLanguageCode(Locale locale) {
@@ -388,7 +388,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 			try {
 				List<Locale> locales = new ArrayList<Locale>();
 				for (String it : spokenLanguages) {
-					locales.add(new Locale(it));
+					locales.add(Locale.of(it));
 				}
 				return locales;
 			} catch (Exception e) {
@@ -431,7 +431,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public URL getHomepage() {
 			try {
-				return new URL(get(MovieProperty.homepage));
+				return URI.create(get(MovieProperty.homepage)).toURL();
 			} catch (Exception e) {
 				return null;
 			}
@@ -557,7 +557,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public URL getPoster() {
 			try {
-				return new URL(get(MovieProperty.poster_path));
+				return URI.create(get(MovieProperty.poster_path)).toURL();
 			} catch (Exception e) {
 				return null;
 			}

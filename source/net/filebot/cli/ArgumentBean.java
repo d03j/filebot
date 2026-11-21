@@ -173,7 +173,7 @@ public class ArgumentBean {
 	}
 
 	public Locale getLocale() {
-		return new Locale(lang);
+		return Locale.of(lang);
 	}
 
 	public Language getLanguage() {

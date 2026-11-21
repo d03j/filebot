@@ -8,6 +8,7 @@ import static net.filebot.util.JsonUtilities.*;
 import static net.filebot.util.StringUtilities.*;
 import static net.filebot.web.WebRequest.*;
 
+import java.net.URI;
 import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -135,7 +136,7 @@ public class OMDbClient implements MovieIdentificationService {
 	}
 
 	public URL getResource(String file) throws Exception {
-		return new URL("http://www.omdbapi.com/" + file);
+		return URI.create("http://www.omdbapi.com/" + file).toURL();
 	}
 
 	public Map<String, String> getMovieInfo(Integer i, String t, String y, boolean tomatoes) throws Exception {

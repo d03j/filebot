@@ -167,6 +167,7 @@ public class MediaInfo implements Closeable {
 	}
 
 	@Override
+	@SuppressWarnings("removal")
 	protected void finalize() {
 		dispose();
 	}

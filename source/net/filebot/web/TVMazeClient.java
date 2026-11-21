@@ -66,9 +66,9 @@ public class TVMazeClient extends AbstractEpisodeListProvider {
 
 		String status = getStringValue(response, "status", String::new);
 		SimpleDate premiered = getStringValue(response, "premiered", SimpleDate::parse);
-		Integer runtime = getStringValue(response, "runtime", Integer::new);
+		Integer runtime = getStringValue(response, "runtime", Integer::valueOf);
 		Object[] genres = getArray(response, "genres");
-		Double rating = getStringValue(getMap(response, "rating"), "average", Double::new);
+		Double rating = getStringValue(getMap(response, "rating"), "average", Double::valueOf);
 
 		SeriesInfo seriesInfo = new SeriesInfo(this, sortOrder, locale, show.getId());
 		seriesInfo.setName(show.getName());
@@ -115,7 +115,7 @@ public class TVMazeClient extends AbstractEpisodeListProvider {
 	}
 
 	protected URL getResource(String resource) throws Exception {
-		return new URL("http://api.tvmaze.com/" + resource);
+		return URI.create("http://api.tvmaze.com/" + resource).toURL();
 	}
 
 	@Override

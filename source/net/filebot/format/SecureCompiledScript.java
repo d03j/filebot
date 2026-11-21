@@ -23,6 +23,7 @@ import javax.script.ScriptException;
 import net.filebot.Settings.ApplicationFolder;
 import net.filebot.util.ExceptionUtilities;
 
+@SuppressWarnings("removal")
 public class SecureCompiledScript extends CompiledScript {
 
 	public static PermissionCollection getDefaultSandboxPermissions() {

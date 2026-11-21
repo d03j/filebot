@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
@@ -132,7 +133,7 @@ public class OpenSubtitlesSubtitleDescriptor implements SubtitleDescriptor, Seri
 	public ByteBuffer fetch() throws Exception {
 		checkDownloadQuota();
 
-		URLConnection c = new URL(getProperty(Property.SubDownloadLink)).openConnection();
+		URLConnection c = URI.create(getProperty(Property.SubDownloadLink)).toURL().openConnection();
 		try (InputStream in = c.getInputStream()) {
 			// check download quota
 			String quota = c.getHeaderField("Download-Quota");

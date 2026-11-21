@@ -49,7 +49,7 @@ public class Movie extends SearchResult {
 	}
 
 	public Locale getLanguage() {
-		return language == null ? null : new Locale(language);
+		return language == null ? null : Locale.of(language);
 	}
 
 	public String getNameWithYear() {

@@ -65,7 +65,7 @@ public class ShooterSubtitles implements VideoHashSubtitleService {
 
 	protected URL getSubApiUrl() {
 		try {
-			return new URL(System.getProperty("net.filebot.web.ShooterSubtitles.url", "https://www.shooter.cn/api/subapi.php"));
+			return URI.create(System.getProperty("net.filebot.web.ShooterSubtitles.url", "https://www.shooter.cn/api/subapi.php")).toURL();
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
@@ -187,7 +187,7 @@ public class ShooterSubtitles implements VideoHashSubtitleService {
 
 		@Override
 		public ByteBuffer fetch() throws Exception {
-			return WebRequest.fetch(new URL(link));
+			return WebRequest.fetch(URI.create(link).toURL());
 		}
 
 		@Override

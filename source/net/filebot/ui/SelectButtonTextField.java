@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,8 +57,8 @@ public class SelectButtonTextField<T> extends JComponent {
 		editor.setUI(new TextFieldComboBoxUI(selectButton));
 		editor.setMaximumRowCount(10);
 
-		SwingUI.installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.CTRL_MASK), new SpinClientAction(-1));
-		SwingUI.installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_MASK), new SpinClientAction(1));
+		SwingUI.installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_DOWN_MASK), new SpinClientAction(-1));
+		SwingUI.installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_DOWN_MASK), new SpinClientAction(1));
 	}
 
 	public String getText() {

@@ -477,8 +477,8 @@ public class FormatDialog extends JDialog {
 						// if the thread has not terminated after 4 seconds, it is probably stuck
 						ThreadGroup threadGroup = ((DefaultThreadFactory) getThreadFactory()).getThreadGroup();
 
-						// kill background thread by force
-						threadGroup.stop();
+						// interrupt background threads
+						threadGroup.interrupt();
 
 						// log access of potentially unsafe method
 						debug.warning("Thread was forcibly terminated");

@@ -12,6 +12,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 
+@SuppressWarnings("removal")
 public final class PrivilegedInvocation implements InvocationHandler {
 
 	private final Object object;

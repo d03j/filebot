@@ -63,7 +63,7 @@ public class Language implements Serializable {
 	}
 
 	public Locale getLocale() {
-		return new Locale(getCode());
+		return Locale.of(getCode());
 	}
 
 	public boolean matches(String code) {
