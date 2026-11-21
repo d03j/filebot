@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,17 +39,16 @@ class CharacterHighlightPainter implements Highlighter.HighlightPainter {
 
 		try {
 			// determine locations
-			TextUI mapper = c.getUI();
-			Rectangle p1 = mapper.modelToView(c, offset1);
-			Rectangle p2 = mapper.modelToView(c, offset2);
+			Rectangle2D p1 = c.modelToView2D(offset1);
+			Rectangle2D p2 = c.modelToView2D(offset2);
 
-			Rectangle r = p1.union(p2);
+			Rectangle2D r = p1.createUnion(p2);
 
-			float w = r.width + 1;
-			float h = r.height;
+			float w = (float) r.getWidth() + 1;
+			float h = (float) r.getHeight();
 
-			float x = r.x - 1;
-			float y = r.y;
+			float x = (float) r.getX() - 1;
+			float y = (float) r.getY();
 
 			float arch = 5f;
 

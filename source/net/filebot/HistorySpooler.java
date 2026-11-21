@@ -52,7 +52,7 @@ public final class HistorySpooler {
 
 		try (FileChannel channel = FileChannel.open(persistentHistoryFile.toPath(), StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
 			try (FileLock lock = channel.lock()) {
-				History history = History.importHistory(new CloseShieldInputStream(Channels.newInputStream(channel))); // keep JAXB from closing the stream
+				History history = History.importHistory(CloseShieldInputStream.wrap(Channels.newInputStream(channel))); // keep JAXB from closing the stream
 				history.addAll(sessionHistory.sequences());
 				return history;
 			}
@@ -73,7 +73,7 @@ public final class HistorySpooler {
 					if (channel.size() > 0) {
 						try {
 							channel.position(0);
-							history = History.importHistory(new CloseShieldInputStream(Channels.newInputStream(channel))); // keep JAXB from closing the stream
+							history = History.importHistory(CloseShieldInputStream.wrap(Channels.newInputStream(channel))); // keep JAXB from closing the stream
 						} catch (Exception e) {
 							debug.log(Level.SEVERE, "Failed to load rename history", e);
 						}
@@ -83,7 +83,7 @@ public final class HistorySpooler {
 					history.addAll(sessionHistory.sequences());
 
 					channel.position(0);
-					History.exportHistory(history, new CloseShieldOutputStream(Channels.newOutputStream(channel))); // keep JAXB from closing the stream
+					History.exportHistory(history, CloseShieldOutputStream.wrap(Channels.newOutputStream(channel))); // keep JAXB from closing the stream
 
 					sessionHistory.clear();
 					persistentHistoryTotalSize = history.totalSize();

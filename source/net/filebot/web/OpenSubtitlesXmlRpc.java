@@ -360,7 +360,7 @@ public class OpenSubtitlesXmlRpc {
 
 	protected URL getXmlRpcUrl() {
 		try {
-			return new URL(System.getProperty("net.filebot.OpenSubtitlesXmlRpc.url", "https://api.opensubtitles.org/xml-rpc"));
+			return URI.create(System.getProperty("net.filebot.OpenSubtitlesXmlRpc.url", "https://api.opensubtitles.org/xml-rpc")).toURL();
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}

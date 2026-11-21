@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 import java.text.Collator;
 import java.text.Normalizer;
@@ -52,7 +53,7 @@ import net.filebot.web.Movie;
 import net.filebot.web.SearchResult;
 import net.filebot.web.SubtitleSearchResult;
 
-public class ReleaseInfo {
+public final class ReleaseInfo {
 
 	private String[] videoSources;
 	private Pattern videoSourcePattern;
@@ -425,6 +426,42 @@ public class ReleaseInfo {
 		return new String[] { "forced", "sdh", "hi", "SDH", "HI" };
 	}
 
+	private static final SystemProperty<Duration> refreshDuration = SystemProperty.of("url.refresh", Duration::parse, null);
+
+	private static SearchResult parseSeries(String[] v) {
+		int id = parseInt(v[0]);
+		String name = v[1];
+		String[] aliasNames = copyOfRange(v, 2, v.length);
+		return new SearchResult(id, name, aliasNames);
+	}
+
+	private static Movie parseMovie(String[] v) {
+		int imdbid = parseInt(v[0]);
+		int tmdbid = parseInt(v[1]);
+		int year = parseInt(v[2]);
+		String name = v[3];
+		String[] aliasNames = copyOfRange(v, 4, v.length);
+		return new Movie(name, aliasNames, year, imdbid > 0 ? imdbid : -1, tmdbid > 0 ? tmdbid : -1, null);
+	}
+
+	private static SubtitleSearchResult parseSubtitle(String[] v) {
+		String kind = v[0];
+		int score = parseInt(v[1]);
+		int imdbId = parseInt(v[2]);
+		int year = parseInt(v[3]);
+		String name = v[4];
+		String[] aliasNames = copyOfRange(v, 5, v.length);
+		return new SubtitleSearchResult(name, aliasNames, year, imdbId, -1, Locale.ENGLISH, SubtitleSearchResult.Kind.forName(kind), score);
+	}
+
+	protected static Resource<String[]> lines(String name, Duration expirationTime) {
+		return resource(name, expirationTime, Function.identity(), String[]::new).memoize();
+	}
+
+	protected static <A> Resource<A[]> tsv(String name, Duration expirationTime, Function<String[], A> parse, IntFunction<A[]> generator) {
+		return resource(name, expirationTime, s -> parse.apply(TAB.split(s)), generator).memoize();
+	}
+
 	private final Resource<Map<Pattern, String>> seriesMappings = resource("url.series-mappings", Cache.ONE_WEEK, Function.identity(), String[]::new).transform(lines -> {
 		Map<Pattern, String> map = new LinkedHashMap<Pattern, String>(lines.length);
 		stream(lines).map(s -> TAB.split(s, 2)).filter(v -> v.length == 2).forEach(v -> {
@@ -438,48 +475,12 @@ public class ReleaseInfo {
 	private final Resource<String[]> queryBlacklist = lines("url.query-blacklist", Cache.ONE_WEEK);
 	private final Resource<String[]> excludeBlacklist = lines("url.exclude-blacklist", Cache.ONE_WEEK);
 
-	private final Resource<SearchResult[]> anidbIndex = tsv("url.anidb-index", Cache.ONE_WEEK, this::parseSeries, SearchResult[]::new);
+	private final Resource<SearchResult[]> anidbIndex = tsv("url.anidb-index", Cache.ONE_WEEK, ReleaseInfo::parseSeries, SearchResult[]::new);
 
-	private final Resource<Movie[]> movieIndex = tsv("url.movie-list", Cache.ONE_MONTH, this::parseMovie, Movie[]::new);
-	private final Resource<SubtitleSearchResult[]> osdbIndex = tsv("url.osdb-index", Cache.ONE_MONTH, this::parseSubtitle, SubtitleSearchResult[]::new);
+	private final Resource<Movie[]> movieIndex = tsv("url.movie-list", Cache.ONE_MONTH, ReleaseInfo::parseMovie, Movie[]::new);
+	private final Resource<SubtitleSearchResult[]> osdbIndex = tsv("url.osdb-index", Cache.ONE_MONTH, ReleaseInfo::parseSubtitle, SubtitleSearchResult[]::new);
 
-	private final SystemProperty<Duration> refreshDuration = SystemProperty.of("url.refresh", Duration::parse, null);
-
-	private SearchResult parseSeries(String[] v) {
-		int id = parseInt(v[0]);
-		String name = v[1];
-		String[] aliasNames = copyOfRange(v, 2, v.length);
-		return new SearchResult(id, name, aliasNames);
-	}
-
-	private Movie parseMovie(String[] v) {
-		int imdbid = parseInt(v[0]);
-		int tmdbid = parseInt(v[1]);
-		int year = parseInt(v[2]);
-		String name = v[3];
-		String[] aliasNames = copyOfRange(v, 4, v.length);
-		return new Movie(name, aliasNames, year, imdbid > 0 ? imdbid : -1, tmdbid > 0 ? tmdbid : -1, null);
-	}
-
-	private SubtitleSearchResult parseSubtitle(String[] v) {
-		String kind = v[0];
-		int score = parseInt(v[1]);
-		int imdbId = parseInt(v[2]);
-		int year = parseInt(v[3]);
-		String name = v[4];
-		String[] aliasNames = copyOfRange(v, 5, v.length);
-		return new SubtitleSearchResult(name, aliasNames, year, imdbId, -1, Locale.ENGLISH, SubtitleSearchResult.Kind.forName(kind), score);
-	}
-
-	protected Resource<String[]> lines(String name, Duration expirationTime) {
-		return resource(name, expirationTime, Function.identity(), String[]::new).memoize();
-	}
-
-	protected <A> Resource<A[]> tsv(String name, Duration expirationTime, Function<String[], A> parse, IntFunction<A[]> generator) {
-		return resource(name, expirationTime, s -> parse.apply(TAB.split(s)), generator).memoize();
-	}
-
-	protected <A> Resource<A[]> resource(String name, Duration expirationTime, Function<String, A> parse, IntFunction<A[]> generator) {
+	protected static <A> Resource<A[]> resource(String name, Duration expirationTime, Function<String, A> parse, IntFunction<A[]> generator) {
 		return () -> {
 			String bundledResourceName = "/net/filebot/resources/data/" + name.replace("url.", "") + ".txt";
 			URL bundledUrl = ReleaseInfo.class.getResource(bundledResourceName);
@@ -493,7 +494,7 @@ public class ReleaseInfo {
 
 			try {
 				Cache cache = Cache.getCache("data", CacheType.Persistent);
-				byte[] bytes = cache.bytes(name, n -> new URL(getProperty(n))).expire(refreshDuration.orElse(expirationTime)).get();
+				byte[] bytes = cache.bytes(name, n -> URI.create(getProperty(n)).toURL()).expire(refreshDuration.orElse(expirationTime)).get();
 
 				// verify header or minimum size before attempting XZ decompression
 				if (bytes != null && bytes.length > 6) {
@@ -519,7 +520,7 @@ public class ReleaseInfo {
 		};
 	}
 
-	protected String getProperty(String name) {
+	protected static String getProperty(String name) {
 		// override resource locations via Java System properties
 		return System.getProperty(name, getBundle(ReleaseInfo.class.getName()).getString(name));
 	}
@@ -603,8 +604,8 @@ public class ReleaseInfo {
 		Map<String, Locale> languageMap = new TreeMap<String, Locale>(collator);
 
 		for (String code : Locale.getISOLanguages()) {
-			Locale locale = new Locale(code); // force ISO3 language as default toString() value
-			Locale iso3locale = new Locale(locale.getISO3Language());
+			Locale locale = Locale.of(code); // force ISO3 language as default toString() value
+			Locale iso3locale = Locale.of(locale.getISO3Language());
 
 			languageMap.put(locale.getLanguage(), iso3locale);
 			languageMap.put(locale.getISO3Language(), iso3locale);
@@ -618,32 +619,32 @@ public class ReleaseInfo {
 		}
 
 		// unofficial language for pb/pob for Portuguese (Brazil)
-		Locale brazil = new Locale("pob");
+		Locale brazil = Locale.of("pob");
 		languageMap.put("brazilian", brazil);
 		languageMap.put("pb", brazil);
 		languageMap.put("pob", brazil);
 
 		// missing ISO 639-2 (B/T) locales (see https://github.com/TakahikoKawasaki/nv-i18n/blob/master/src/main/java/com/neovisionaries/i18n/LanguageAlpha3Code.java)
-		languageMap.put("tib", new Locale("bod"));
-		languageMap.put("cze", new Locale("ces"));
-		languageMap.put("wel", new Locale("cym"));
-		languageMap.put("ger", new Locale("deu"));
-		languageMap.put("gre", new Locale("ell"));
-		languageMap.put("baq", new Locale("eus"));
-		languageMap.put("per", new Locale("fas"));
-		languageMap.put("fre", new Locale("fra"));
-		languageMap.put("arm", new Locale("hye"));
-		languageMap.put("ice", new Locale("isl"));
-		languageMap.put("geo", new Locale("kat"));
-		languageMap.put("mac", new Locale("mkd"));
-		languageMap.put("mao", new Locale("mri"));
-		languageMap.put("may", new Locale("msa"));
-		languageMap.put("bur", new Locale("mya"));
-		languageMap.put("dut", new Locale("nld"));
-		languageMap.put("rum", new Locale("ron"));
-		languageMap.put("slo", new Locale("slk"));
-		languageMap.put("alb", new Locale("sqi"));
-		languageMap.put("chi", new Locale("zho"));
+		languageMap.put("tib", Locale.of("bod"));
+		languageMap.put("cze", Locale.of("ces"));
+		languageMap.put("wel", Locale.of("cym"));
+		languageMap.put("ger", Locale.of("deu"));
+		languageMap.put("gre", Locale.of("ell"));
+		languageMap.put("baq", Locale.of("eus"));
+		languageMap.put("per", Locale.of("fas"));
+		languageMap.put("fre", Locale.of("fra"));
+		languageMap.put("arm", Locale.of("hye"));
+		languageMap.put("ice", Locale.of("isl"));
+		languageMap.put("geo", Locale.of("kat"));
+		languageMap.put("mac", Locale.of("mkd"));
+		languageMap.put("mao", Locale.of("mri"));
+		languageMap.put("may", Locale.of("msa"));
+		languageMap.put("bur", Locale.of("mya"));
+		languageMap.put("dut", Locale.of("nld"));
+		languageMap.put("rum", Locale.of("ron"));
+		languageMap.put("slo", Locale.of("slk"));
+		languageMap.put("alb", Locale.of("sqi"));
+		languageMap.put("chi", Locale.of("zho"));
 
 		// remove illegal tokens
 		languageMap.remove("");

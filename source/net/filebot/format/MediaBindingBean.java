@@ -631,7 +631,7 @@ public class MediaBindingBean {
 	@Define("languages")
 	public Object getSpokenLanguages() {
 		List<?> languages = infoObject instanceof Movie ? (List<?>) getMetaInfo().getProperty("spokenLanguages") : singletonList(getMetaInfo().getProperty("language"));
-		return languages.stream().map(it -> new Locale(it.toString()).getDisplayLanguage(Locale.ENGLISH)).collect(toList());
+		return languages.stream().map(it -> Locale.of(it.toString()).getDisplayLanguage(Locale.ENGLISH)).collect(toList());
 	}
 
 	@Define("actors")
@@ -731,7 +731,7 @@ public class MediaBindingBean {
 
 	@Define("episodelist")
 	public Object getEpisodeList() throws Exception {
-		return WebServices.getEpisodeListProvider(getSeriesInfo().getDatabase()).getEpisodeList(getSeriesInfo().getId(), SortOrder.forName(getSeriesInfo().getOrder()), new Locale(getSeriesInfo().getLanguage()));
+		return WebServices.getEpisodeListProvider(getSeriesInfo().getDatabase()).getEpisodeList(getSeriesInfo().getId(), SortOrder.forName(getSeriesInfo().getOrder()), Locale.of(getSeriesInfo().getLanguage()));
 	}
 
 	@Define("localize")

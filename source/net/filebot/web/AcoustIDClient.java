@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,7 +89,7 @@ public class AcoustIDClient implements MusicIdentificationService {
 		return (String) getCache().computeIfAbsent(postParam.toString(), it -> {
 			REQUEST_LIMIT.acquirePermit();
 
-			URL url = new URL("http://api.acoustid.org/v2/lookup?client=" + apikey + "&meta=recordings+releases+releasegroups+tracks+compress");
+			URL url = URI.create("http://api.acoustid.org/v2/lookup?client=" + apikey + "&meta=recordings+releases+releasegroups+tracks+compress").toURL();
 			Map<String, String> requestParam = new HashMap<String, String>();
 			requestParam.put("Content-Encoding", "gzip");
 			requestParam.put("Accept-Encoding", "gzip");

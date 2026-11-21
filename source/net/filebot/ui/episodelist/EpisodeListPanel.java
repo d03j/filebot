@@ -7,6 +7,7 @@ import static net.filebot.web.EpisodeUtilities.*;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -72,8 +73,8 @@ public class EpisodeListPanel extends AbstractSearchPanel<EpisodeListProvider, E
 
 		searchTextField.getSelectButton().addPropertyChangeListener(SelectButton.SELECTED_VALUE, selectButtonListener);
 
-		installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_MASK), new SpinSeasonAction(1));
-		installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_MASK), new SpinSeasonAction(-1));
+		installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), new SpinSeasonAction(1));
+		installAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), new SpinSeasonAction(-1));
 	}
 
 	@Override

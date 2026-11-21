@@ -93,7 +93,7 @@ public class AnidbClient extends AbstractEpisodeListProvider {
 	@Override
 	protected SeriesData fetchSeriesData(SearchResult anime, SortOrder sortOrder, Locale locale) throws Exception {
 		// e.g. http://api.anidb.net:9001/httpapi?request=anime&client=filebot&clientver=1&protover=1&aid=4521
-		URL url = new URL("http://api.anidb.net:9001/httpapi?request=anime&client=" + client + "&clientver=" + clientver + "&protover=1&aid=" + anime.getId());
+		URL url = URI.create("http://api.anidb.net:9001/httpapi?request=anime&client=" + client + "&clientver=" + clientver + "&protover=1&aid=" + anime.getId()).toURL();
 
 		// respect flood protection limits
 		REQUEST_LIMIT.acquirePermit();
@@ -183,7 +183,7 @@ public class AnidbClient extends AbstractEpisodeListProvider {
 	 */
 	public synchronized SearchResult[] getAnimeTitles() throws Exception {
 		// get data file (unzip and cache)
-		byte[] bytes = getCache("root").bytes("anime-titles.dat.gz", n -> new URL("http://anidb.net/api/" + n)).get();
+		byte[] bytes = getCache("root").bytes("anime-titles.dat.gz", n -> URI.create("http://anidb.net/api/" + n).toURL()).get();
 
 		// <aid>|<type>|<language>|<title>
 		// type: 1=primary title (one per anime), 2=synonyms (multiple per anime), 3=shorttitles (multiple per anime), 4=official title (one per language)

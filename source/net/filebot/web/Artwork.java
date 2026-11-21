@@ -46,7 +46,7 @@ public class Artwork implements Serializable {
 	}
 
 	public Locale getLanguage() {
-		return language == null ? null : new Locale(language);
+		return language == null ? null : Locale.of(language);
 	}
 
 	public double getRating() {

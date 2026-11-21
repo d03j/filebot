@@ -338,7 +338,7 @@ public class RenamePanel extends JComponent {
 					} else {
 						int index = namesList.getListComponent().getSelectedIndex();
 						if (index >= 0) {
-							File file = (File) filesList.getListComponent().getModel().getElementAt(index);
+							File file = filesList.getListComponent().getModel().getElementAt(index);
 							String generatedName = namesList.getListComponent().getModel().getElementAt(index).toString();
 
 							String forcedName = showInputDialog("Enter Name:", generatedName, "Enter Name", RenamePanel.this);
@@ -813,7 +813,7 @@ public class RenamePanel extends JComponent {
 		}
 
 		public Locale getLocale(ActionEvent evt) {
-			return new Locale(persistentPreferredLanguage.getValue());
+			return Locale.of(persistentPreferredLanguage.getValue());
 		}
 
 		private boolean isAutoDetectionEnabled(ActionEvent evt) {

@@ -261,7 +261,7 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 				Map<String, String> fields = response.getSubtitleData().get(0);
 
 				String lang = fields.get("SubLanguageID");
-				language = new Locale(lang);
+				language = Locale.of(lang);
 
 				String imdb = fields.get("IDMovieImdb");
 				String name = fields.get("MovieName");
@@ -393,7 +393,7 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 			return xmlrpc.detectLanguage(data);
 		});
 
-		return languages.size() > 0 ? new Locale(languages.get(0)) : Locale.ROOT;
+		return languages.size() > 0 ? Locale.of(languages.get(0)) : Locale.ROOT;
 	}
 
 	public synchronized void login() throws Exception {

@@ -167,6 +167,7 @@ public class ExpressionFormat extends Format {
 		return sb.append(format(getBindings(object)));
 	}
 
+	@SuppressWarnings("removal")
 	public String format(Bindings bindings) {
 		// use privileged bindings so we are not restricted by the script sandbox
 		Bindings priviledgedBindings = PrivilegedInvocation.newProxy(Bindings.class, bindings, AccessController.getContext());

@@ -18,6 +18,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.CollationKey;
 import java.text.Collator;
@@ -1212,7 +1213,7 @@ public class MediaDetection {
 		Set<Integer> collection = new LinkedHashSet<Integer>();
 		for (String token : Pattern.compile("[\\s\"<>|]+").split(text)) {
 			try {
-				URL url = new URL(token);
+				URL url = URI.create(token).toURL();
 				if (url.getHost().contains("thetvdb") && url.getQuery() != null) {
 					Matcher idMatch = Pattern.compile("(?<=(^|\\W)id=)\\d+").matcher(url.getQuery());
 					while (idMatch.find()) {

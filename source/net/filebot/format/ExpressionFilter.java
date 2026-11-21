@@ -36,6 +36,7 @@ public class ExpressionFilter {
 		return matches(new ExpressionBindings(value));
 	}
 
+	@SuppressWarnings("removal")
 	public boolean matches(Bindings bindings) throws ScriptException {
 		this.lastException = null;
 

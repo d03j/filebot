@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.*;
 import static net.filebot.Logging.*;
 import static net.filebot.util.JsonUtilities.*;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +37,7 @@ public class FanartTVClient implements Datasource, ArtworkProvider {
 
 	public URL getResource(String path) throws Exception {
 		// e.g. http://webservice.fanart.tv/v3/movies/17645?api_key=6fa42b0ef3b5f3aab6a7edaa78675ac2
-		return new URL("http://webservice.fanart.tv/v3/" + path + "?api_key=" + apikey);
+		return URI.create("http://webservice.fanart.tv/v3/" + path + "?api_key=" + apikey).toURL();
 	}
 
 	@Override
@@ -48,12 +49,12 @@ public class FanartTVClient implements Datasource, ArtworkProvider {
 			return streamJsonObjects(type.getValue()).map(it -> {
 				try {
 					String url = getString(it, "url");
-					Locale language = getStringValue(it, "lang", Locale::new);
+					Locale language = getStringValue(it, "lang", Locale::of);
 					Double likes = getDecimal(it, "likes");
 					String season = getString(it, "season");
 					String discType = getString(it, "disc_type");
 
-					return new Artwork(this, Stream.of(type.getKey(), season, discType), new URL(url), language, likes);
+					return new Artwork(this, Stream.of(type.getKey(), season, discType), URI.create(url).toURL(), language, likes);
 				} catch (Exception e) {
 					debug.log(Level.WARNING, e, e::getMessage);
 					return null;
