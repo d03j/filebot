@@ -69,22 +69,30 @@ public class Main {
 
 	public interface PosixLibC extends Library {
 		int setenv(String name, String value, int overwrite);
+		int umask(int mask);
+	}
+
+	public static void initializePosixEnvironment() {
+		if (!Platform.isWindows()) {
+			try {
+				PosixLibC libc = (PosixLibC) Native.loadLibrary("c", PosixLibC.class);
+				libc.umask(002);
+				if (Platform.isLinux()) {
+					libc.setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
+					if (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null) {
+						libc.setenv("GDK_BACKEND", "x11", 1);
+					}
+				}
+			} catch (Throwable t) {
+				// fallback gracefully if libc / JNA cannot be loaded
+			}
+		}
 	}
 
 	public static void main(String[] argumentArray) {
 		try {
 			// configure POSIX environment before AWT/JavaFX initialization
-			if (Platform.isLinux()) {
-				try {
-					PosixLibC libc = (PosixLibC) Native.loadLibrary("c", PosixLibC.class);
-					libc.setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
-					if (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null) {
-						libc.setenv("GDK_BACKEND", "x11", 1);
-					}
-				} catch (Throwable t) {
-					// fallback gracefully if libc / JNA cannot be loaded
-				}
-			}
+			initializePosixEnvironment();
 
 			// parse arguments
 			ArgumentBean args = ArgumentBean.parse(argumentArray);

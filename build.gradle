@@ -98,6 +98,7 @@ tasks.named('test') {
     include 'net/filebot/similarity/SeasonEpisodeMatcherTest.class'
     include 'net/filebot/subtitle/SubtitleLanguageTest.class'
     include 'net/filebot/ui/rename/RenameActionTest.class'
+    include 'net/filebot/MainTest.class'
 }
 
 jar {
