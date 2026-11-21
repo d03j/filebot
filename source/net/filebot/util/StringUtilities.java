@@ -29,7 +29,7 @@ public final class StringUtilities {
 		Matcher matcher = DIGIT.matcher(s);
 		while (matcher.find()) {
 			try {
-				numbers.add(new Integer(matcher.group()));
+				numbers.add(Integer.valueOf(matcher.group()));
 			} catch (NumberFormatException e) {
 				// ignore
 			}
@@ -45,7 +45,7 @@ public final class StringUtilities {
 		Matcher matcher = DIGIT.matcher(s);
 		if (matcher.find()) {
 			try {
-				return new Integer(matcher.group());
+				return Integer.valueOf(matcher.group());
 			} catch (NumberFormatException e) {
 				// ignore
 			}

@@ -101,6 +101,15 @@ tasks.named('test') {
     include 'net/filebot/MainTest.class'
 }
 
+import javax.inject.Inject
+
+interface InjectedServices {
+    @Inject
+    FileSystemOperations getFs()
+}
+
+def injected = objects.newInstance(InjectedServices)
+
 jar {
     archiveFileName = 'filebot.jar'
     manifest {
@@ -115,7 +124,7 @@ jar {
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     doLast {
-        project.copy {
+        injected.fs.copy {
             from 'bin/filebot.sh'
             into 'build/libs'
             filePermissions {
