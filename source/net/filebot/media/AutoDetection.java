@@ -303,7 +303,7 @@ public class AutoDetection {
 			return getChildren(f.getParentFile()).stream().filter(VIDEO_FILES::accept).filter(it -> {
 				return find(dn, snm) || find(normalize(it.getName()), snm);
 			}).map(it -> {
-				return streamMatches(it.getName(), EPISODE_NUMBERS).map(Integer::new).collect(toSet());
+				return streamMatches(it.getName(), EPISODE_NUMBERS).map(Integer::valueOf).collect(toSet());
 			}).filter(it -> it.size() > 0).distinct().count() >= 10;
 		}
 

@@ -762,7 +762,7 @@ public class MediaBindingBean {
 
 	@Define("bitrate")
 	public Long getBitRate() {
-		return new Double(getMediaInfo(StreamKind.General, 0, "OverallBitRate")).longValue();
+		return (long) Double.parseDouble(getMediaInfo(StreamKind.General, 0, "OverallBitRate"));
 	}
 
 	@Define("duration")

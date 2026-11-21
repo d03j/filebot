@@ -146,11 +146,11 @@ public class EpisodeFormat extends Format {
 		}
 
 		if ((m = sxePattern.matcher(source)).find()) {
-			season = (m.group(1) == null) ? null : new Integer(m.group(1));
+			season = (m.group(1) == null) ? null : Integer.valueOf(m.group(1));
 			if (m.group(2) == null)
-				episode = new Integer(m.group(3));
+				episode = Integer.valueOf(m.group(3));
 			else
-				special = new Integer(m.group(3));
+				special = Integer.valueOf(m.group(3));
 
 			source.replace(m.start(), m.end(), ""); // remove matched part from text
 

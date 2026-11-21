@@ -273,7 +273,7 @@ public class Main {
 	 */
 	private static void checkUpdate() throws Exception {
 		Cache cache = Cache.getCache(getApplicationName(), CacheType.Persistent);
-		Document dom = cache.xml("update.url", s -> new URL(getApplicationProperty(s))).expire(Cache.ONE_WEEK).retry(0).get();
+		Document dom = cache.xml("update.url", s -> URI.create(getApplicationProperty(s)).toURL()).expire(Cache.ONE_WEEK).retry(0).get();
 
 		// parse update xml
 		final Map<String, String> update = streamElements(dom.getFirstChild()).collect(toMap(n -> {

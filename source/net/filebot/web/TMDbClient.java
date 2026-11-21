@@ -414,7 +414,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Integer getId() {
 			try {
-				return new Integer(get(MovieProperty.id));
+				return Integer.valueOf(get(MovieProperty.id));
 			} catch (Exception e) {
 				return null;
 			}
@@ -423,7 +423,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 		public Integer getImdbId() {
 			// e.g. tt0379786
 			try {
-				return new Integer(get(MovieProperty.imdb_id).substring(2));
+				return Integer.valueOf(get(MovieProperty.imdb_id).substring(2));
 			} catch (Exception e) {
 				return null;
 			}
@@ -443,7 +443,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Integer getVotes() {
 			try {
-				return new Integer(get(MovieProperty.vote_count));
+				return Integer.valueOf(get(MovieProperty.vote_count));
 			} catch (Exception e) {
 				return null;
 			}
@@ -451,7 +451,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Double getRating() {
 			try {
-				return new Double(get(MovieProperty.vote_average));
+				return Double.valueOf(get(MovieProperty.vote_average));
 			} catch (Exception e) {
 				return null;
 			}
@@ -491,7 +491,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Long getBudget() {
 			try {
-				return new Long(get(MovieProperty.budget));
+				return Long.valueOf(get(MovieProperty.budget));
 			} catch (Exception e) {
 				return null;
 			}
@@ -499,7 +499,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Long getRevenue() {
 			try {
-				return new Long(get(MovieProperty.revenue));
+				return Long.valueOf(get(MovieProperty.revenue));
 			} catch (Exception e) {
 				return null;
 			}
@@ -507,7 +507,7 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 		public Double getPopularity() {
 			try {
-				return new Double(get(MovieProperty.popularity));
+				return Double.valueOf(get(MovieProperty.popularity));
 			} catch (Exception e) {
 				return null;
 			}

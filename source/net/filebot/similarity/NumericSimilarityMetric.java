@@ -42,7 +42,7 @@ public class NumericSimilarityMetric implements SimilarityMetric {
 			Matcher m = DIGIT.matcher(s);
 			while (m.find()) {
 				// remove leading zeros
-				tokens.add(new Integer(m.group()).toString());
+				tokens.add(Integer.valueOf(m.group()).toString());
 			}
 
 			return tokens;
