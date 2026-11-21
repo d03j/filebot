@@ -24,15 +24,20 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -40,6 +45,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -55,6 +61,92 @@ import com.ibm.icu.text.CharsetMatch;
 
 public final class FileUtilities {
 
+	public static final Set<PosixFilePermission> POSIX_FILE_PERMISSIONS_644 = unmodifiableSet(PosixFilePermissions.fromString("rw-r--r--"));
+	public static final Set<PosixFilePermission> POSIX_DIRECTORY_PERMISSIONS_755 = unmodifiableSet(PosixFilePermissions.fromString("rwxr-xr-x"));
+
+	public static Path createDirectories(Path dir) throws IOException {
+		if (dir == null || Files.exists(dir)) {
+			return dir;
+		}
+
+		List<Path> toCreate = new ArrayList<Path>();
+		for (Path p = dir; p != null && !Files.exists(p); p = p.getParent()) {
+			toCreate.add(p);
+		}
+		Collections.reverse(toCreate);
+
+		boolean isPosix = false;
+		try {
+			isPosix = dir.getFileSystem().supportedFileAttributeViews().contains("posix");
+		} catch (Exception e) {
+			// ignore
+		}
+
+		if (isPosix) {
+			try {
+				FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(POSIX_DIRECTORY_PERMISSIONS_755);
+				Files.createDirectories(dir, attr);
+			} catch (UnsupportedOperationException e) {
+				Files.createDirectories(dir);
+			}
+			for (Path p : toCreate) {
+				try {
+					Files.setPosixFilePermissions(p, POSIX_DIRECTORY_PERMISSIONS_755);
+				} catch (Exception e) {
+					debug.fine("Failed to set directory permissions on " + p + ": " + e);
+				}
+			}
+		} else {
+			Files.createDirectories(dir);
+		}
+
+		return dir;
+	}
+
+	public static void setStandardPermissions(File file) {
+		if (file == null || !file.exists()) {
+			return;
+		}
+
+		try {
+			Path path = file.toPath();
+			if (!path.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+				return;
+			}
+
+			if (Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
+				Files.setPosixFilePermissions(path, POSIX_FILE_PERMISSIONS_644);
+			} else if (Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
+				Files.walkFileTree(path, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<Path>() {
+
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						try {
+							Files.setPosixFilePermissions(dir, POSIX_DIRECTORY_PERMISSIONS_755);
+						} catch (Exception e) {
+							debug.fine("Failed to set directory permissions on " + dir + ": " + e);
+						}
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFile(Path f, BasicFileAttributes attrs) throws IOException {
+						try {
+							if (attrs.isRegularFile()) {
+								Files.setPosixFilePermissions(f, POSIX_FILE_PERMISSIONS_644);
+							}
+						} catch (Exception e) {
+							debug.fine("Failed to set file permissions on " + f + ": " + e);
+						}
+						return FileVisitResult.CONTINUE;
+					}
+				});
+			}
+		} catch (Exception e) {
+			debug.fine("Failed to set standard permissions on " + file + ": " + e);
+		}
+	}
+
 	public static File moveRename(File source, File destination) throws IOException {
 		// resolve destination
 		destination = resolveDestination(source, destination);
@@ -62,6 +154,7 @@ public final class FileUtilities {
 		if (source.isDirectory()) {
 			// move folder
 			FileUtils.moveDirectory(source, destination);
+			setStandardPermissions(destination);
 			return destination;
 		}
 
@@ -69,14 +162,18 @@ public final class FileUtilities {
 		// but ATOMIC_MOVE can only work for files on the same drive, if that is not the case there is no point trying move with ATOMIC_MOVE
 		if (File.separator.equals("\\") && source.equals(destination)) {
 			try {
-				return Files.move(source.toPath(), destination.toPath(), StandardCopyOption.ATOMIC_MOVE).toFile();
+				File result = Files.move(source.toPath(), destination.toPath(), StandardCopyOption.ATOMIC_MOVE).toFile();
+				setStandardPermissions(result);
+				return result;
 			} catch (AtomicMoveNotSupportedException e) {
 				debug.warning(e.getMessage());
 			}
 		}
 
 		// Linux and Mac OS X
-		return Files.move(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
+		File result = Files.move(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
+		setStandardPermissions(result);
+		return result;
 	}
 
 	public static File copyAs(File source, File destination) throws IOException {
@@ -86,11 +183,14 @@ public final class FileUtilities {
 		if (source.isDirectory()) {
 			// copy folder
 			FileUtils.copyDirectory(source, destination);
+			setStandardPermissions(destination);
 			return destination;
 		}
 
 		// copy file
-		return Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
+		File result = Files.copy(source.toPath(), destination.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
+		setStandardPermissions(result);
+		return result;
 	}
 
 	public static File resolve(File source, File destination) {
@@ -107,7 +207,9 @@ public final class FileUtilities {
 		destination = resolve(source, destination);
 
 		// create parent folder if necessary and make sure that the folder structure is created, and throw exception if the folder structure can't be created
-		Files.createDirectories(destination.getParentFile().toPath());
+		if (destination.getParentFile() != null) {
+			createDirectories(destination.getParentFile().toPath());
+		}
 
 		return destination;
 	}
@@ -143,8 +245,11 @@ public final class FileUtilities {
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Path linkFile = destination.resolve(source.relativize(file));
-				Files.createDirectories(linkFile.getParent());
+				if (linkFile.getParent() != null) {
+					createDirectories(linkFile.getParent());
+				}
 				Files.createLink(linkFile, file);
+				setStandardPermissions(linkFile.toFile());
 				return FileVisitResult.CONTINUE;
 			}
 		});
@@ -158,7 +263,7 @@ public final class FileUtilities {
 	}
 
 	public static File createFolders(File folder) throws IOException {
-		return Files.createDirectories(folder.toPath()).toFile();
+		return createDirectories(folder.toPath()).toFile();
 	}
 
 	public static byte[] readFile(File source) throws IOException {
@@ -184,6 +289,7 @@ public final class FileUtilities {
 		try (FileChannel channel = FileChannel.open(destination.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
 			channel.write(data);
 		}
+		setStandardPermissions(destination);
 		return destination;
 	}
 

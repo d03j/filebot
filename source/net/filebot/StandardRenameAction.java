@@ -35,6 +35,7 @@ public enum StandardRenameAction implements RenameAction {
 			// move file and the create a symlink to the new location via NIO.2
 			try {
 				Files.move(from.toPath(), destionation.toPath());
+				FileUtilities.setStandardPermissions(destionation);
 				FileUtilities.createRelativeSymlink(from, destionation, true);
 			} catch (LinkageError e) {
 				throw new Exception("Unsupported Operation: move, createSymbolicLink");
@@ -67,7 +68,9 @@ public enum StandardRenameAction implements RenameAction {
 
 			// create hardlink via NIO.2
 			try {
-				return FileUtilities.createHardLinkStructure(destionation, from);
+				File result = FileUtilities.createHardLinkStructure(destionation, from);
+				FileUtilities.setStandardPermissions(result);
+				return result;
 			} catch (LinkageError e) {
 				throw new Exception("Unsupported Operation: createLink");
 			}
@@ -96,6 +99,7 @@ public enum StandardRenameAction implements RenameAction {
 			if (!from.renameTo(dest))
 				throw new IOException("Rename failed: " + dest);
 
+			FileUtilities.setStandardPermissions(dest);
 			return dest;
 		}
 	},
