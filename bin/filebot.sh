@@ -25,8 +25,8 @@ if [ -z "$HOME" ]; then
 	exit 1
 fi
 
-# Ensure group write permissions for directories and files created by the application
-umask 002
+# Ensure standard permissions for directories (755) and files (644) created by the application
+umask 022
 
 # Fix blank window rendering on Wayland and non-reparenting window managers
 export _JAVA_AWT_WM_NONREPARENTING=1

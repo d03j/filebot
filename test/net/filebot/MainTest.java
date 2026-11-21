@@ -26,19 +26,30 @@ public class MainTest {
 				Files.createDirectories(subDir);
 
 				Set<PosixFilePermission> perms = Files.getPosixFilePermissions(subDir);
-				assertTrue("Directory created by app should have group write permission", perms.contains(PosixFilePermission.GROUP_WRITE));
+				assertTrue("Directory created by app should have owner read permission", perms.contains(PosixFilePermission.OWNER_READ));
+				assertTrue("Directory created by app should have owner write permission", perms.contains(PosixFilePermission.OWNER_WRITE));
+				assertTrue("Directory created by app should have owner execute permission", perms.contains(PosixFilePermission.OWNER_EXECUTE));
 				assertTrue("Directory created by app should have group read permission", perms.contains(PosixFilePermission.GROUP_READ));
 				assertTrue("Directory created by app should have group execute permission", perms.contains(PosixFilePermission.GROUP_EXECUTE));
+				assertFalse("Directory created by app with umask 022 should NOT have group write permission", perms.contains(PosixFilePermission.GROUP_WRITE));
+				assertTrue("Directory created by app should have others read permission", perms.contains(PosixFilePermission.OTHERS_READ));
+				assertTrue("Directory created by app should have others execute permission", perms.contains(PosixFilePermission.OTHERS_EXECUTE));
+				assertFalse("Directory created by app with umask 022 should NOT have others write permission", perms.contains(PosixFilePermission.OTHERS_WRITE));
 
 				File fileObjDir = new File(parent.toFile(), "test_mkdirs_dir");
 				assertTrue(fileObjDir.mkdirs());
 				Set<PosixFilePermission> fileDirPerms = Files.getPosixFilePermissions(fileObjDir.toPath());
-				assertTrue("Directory created via File.mkdirs should have group write permission", fileDirPerms.contains(PosixFilePermission.GROUP_WRITE));
+				assertTrue("Directory created via File.mkdirs should have group read permission", fileDirPerms.contains(PosixFilePermission.GROUP_READ));
+				assertFalse("Directory created via File.mkdirs with umask 022 should NOT have group write permission", fileDirPerms.contains(PosixFilePermission.GROUP_WRITE));
 
 				Path file = Files.createFile(parent.resolve("test_file.txt"));
 				Set<PosixFilePermission> filePerms = Files.getPosixFilePermissions(file);
-				assertTrue("File created by app should have group write permission", filePerms.contains(PosixFilePermission.GROUP_WRITE));
+				assertTrue("File created by app should have owner read permission", filePerms.contains(PosixFilePermission.OWNER_READ));
+				assertTrue("File created by app should have owner write permission", filePerms.contains(PosixFilePermission.OWNER_WRITE));
 				assertTrue("File created by app should have group read permission", filePerms.contains(PosixFilePermission.GROUP_READ));
+				assertFalse("File created by app with umask 022 should NOT have group write permission", filePerms.contains(PosixFilePermission.GROUP_WRITE));
+				assertTrue("File created by app should have others read permission", filePerms.contains(PosixFilePermission.OTHERS_READ));
+				assertFalse("File created by app with umask 022 should NOT have others write permission", filePerms.contains(PosixFilePermission.OTHERS_WRITE));
 			} finally {
 				deleteRecursively(parent.toFile());
 			}
@@ -50,7 +61,7 @@ public class MainTest {
 		File script = new File("bin/filebot.sh");
 		assertTrue("bin/filebot.sh should exist", script.isFile());
 		String content = Files.readString(script.toPath());
-		assertTrue("bin/filebot.sh should configure umask 002", content.contains("umask 002"));
+		assertTrue("bin/filebot.sh should configure umask 022", content.contains("umask 022"));
 	}
 
 	private void deleteRecursively(File file) {

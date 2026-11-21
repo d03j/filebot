@@ -76,7 +76,7 @@ public class Main {
 		if (!Platform.isWindows()) {
 			try {
 				PosixLibC libc = (PosixLibC) Native.loadLibrary("c", PosixLibC.class);
-				libc.umask(002);
+				libc.umask(022);
 				if (Platform.isLinux()) {
 					libc.setenv("_JAVA_AWT_WM_NONREPARENTING", "1", 1);
 					if (System.getenv("WAYLAND_DISPLAY") != null || System.getenv("SSH_CONNECTION") != null || System.getenv("SSH_CLIENT") != null) {

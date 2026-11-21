@@ -258,8 +258,11 @@ public class ScriptShellMethods {
 	public static void createFileIfNotExists(File self) throws IOException {
 		if (!self.isFile()) {
 			// create parent folder structure if necessary & create file
-			Files.createDirectories(self.getParentFile().toPath());
+			if (self.getParentFile() != null) {
+				FileUtilities.createDirectories(self.getParentFile().toPath());
+			}
 			Files.createFile(self.toPath());
+			FileUtilities.setStandardPermissions(self);
 		}
 	}
 
