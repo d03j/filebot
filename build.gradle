@@ -8,6 +8,8 @@ repositories {
     mavenCentral()
 }
 
+version = '1.1.0'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
